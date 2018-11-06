@@ -14,6 +14,10 @@
         v0.2
             2018-11-06
                 To add function for checking and outputting brocken links
+        v0.3
+            2018-11-06
+                To make the value of "SIZE_of_ITEM" in large file output
+                more readable
 
 '''
 
@@ -129,7 +133,7 @@ def traverse_directory(path, whitelist_path):
                 elif os.path.isfile(item_name) and item_name not in whitelist:
                     f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
                     if is_large_file == 'YES':
-                        large_file_list.append([str(f_inode), str(f_size), f_m_time, f_a_time, f_path])
+                        large_file_list.append([str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
                 elif os.path.islink(item_name) and item_name not in whitelist:
                     l_path, is_broken_link = __check_broken_link__(item_name)
                     if is_broken_link == 'YES':
