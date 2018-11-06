@@ -10,7 +10,10 @@
     ChangeLog:
         v0.1
             2018-11-05
-                Initiation.
+                Initiation
+        v0.2
+            2018-11-06
+                To add function for checking and outputting brocken links
 
 '''
 
@@ -58,15 +61,31 @@ def __check_large_file__(file_path):
     return (file_inode, file_size, modif_time, access_time, file_path, is_large_file)
 
 
+def __check_broken_link__(link_path):
+    'To check whether a symbolic link is a brocken link'
+
+    is_broken_link = 'NO'
+
+    if os.path.lexists(link_path):
+        is_broken_link = 'YES'
+
+    return (link_path, is_broken_link)
+
+
 def __whitelist__(whitelist_path):
     'To initial the whitelist for ignoring when scanning'
 
-    whitelist = []
+    whitelist = set([])
 
     with open(whitelist_path, 'rb') as fh:
         for l in fh:
             l = l.strip()
-            whitelist.append(l)
+            if not l.endswith('/'):
+                whitelist.add(l)
+                whitelist.add(l + '/')
+            elif l.endswith('/'):
+                whitelist.add(l[:-1])
+                whitelist.add(l)
 
     return whitelist
 
@@ -74,14 +93,9 @@ def __whitelist__(whitelist_path):
 def traverse_directory(path, whitelist_path):
     'To generate a subdirectory tree from an imported root, then to traverse them'
 
-    if not os.path.isabs(path):
-        path = os.path.abspath(path)
-
-    if not os.path.isabs(whitelist_path):
-        whitelist_path = os.path.abspath(whitelist_path)
-
     fragment_directory_list = []
     large_file_list = []
+    broken_link_list = []
 
     whitelist = __whitelist__(whitelist_path)
 
@@ -103,23 +117,28 @@ def traverse_directory(path, whitelist_path):
 ######################################################################################
 
                 if os.path.isdir(item_name):
-                    frag_dir_lst, larg_fil_lst = traverse_directory(item_name, whitelist_path)
+                    frag_dir_lst, larg_fil_lst, brok_lnk_lst = traverse_directory(item_name, whitelist_path)
                     fragment_directory_list.extend(frag_dir_lst)
                     large_file_list.extend(larg_fil_lst)
+                    broken_link_list.extend(brok_lnk_lst)
 
 ###########################################################
 # An uncompressed large files should be recorded directly #
 ###########################################################
 
                 elif os.path.isfile(item_name) and item_name not in whitelist:
-                        f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
-                        if is_large_file == 'YES':
-                            large_file_list.append([str(f_inode), str(f_size), f_m_time, f_a_time, f_path])
+                    f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
+                    if is_large_file == 'YES':
+                        large_file_list.append([str(f_inode), str(f_size), f_m_time, f_a_time, f_path])
+                elif os.path.islink(item_name) and item_name not in whitelist:
+                    l_path, is_broken_link = __check_broken_link__(item_name)
+                    if is_broken_link == 'YES':
+                        broken_link_list.append(l_path)
 
-    return (fragment_directory_list, large_file_list)
+    return (fragment_directory_list, large_file_list, broken_link_list)
 
 
-def order_report(fragment_directory_list, large_file_list):
+def order_report(fragment_directory_list, large_file_list, broken_link_list):
     'To order all the scanned result into a report'
 
     with open('fragment_directory.report.txt', 'wb') as fragment_directory_outFH:
@@ -132,7 +151,12 @@ def order_report(fragment_directory_list, large_file_list):
         for i in large_file_list:
             print >> large_file_outFH, '\t'.join(i)
 
+    with open('brocken_link.report.txt', 'wb') as broken_link_outFH:
+        print >> broken_link_outFH, '#BROKEN_LINK_PATH'
+        for i in broken_link_list:
+            print >> broken_link_outFH, i
+
 
 if __name__ == '__main__':
-    fragment_directory_list, large_file_list = traverse_directory(sys.argv[1], sys.argv[2])
-    order_report(fragment_directory_list, large_file_list)
+    fragment_directory_list, large_file_list, broken_link_list = traverse_directory(os.path.abspath(sys.argv[1]), os.path.abspath(sys.argv[2]))
+    order_report(fragment_directory_list, large_file_list, broken_link_list)
