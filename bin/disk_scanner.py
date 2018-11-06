@@ -103,15 +103,15 @@ def traverse_directory(path, whitelist_path):
 
     whitelist = __whitelist__(whitelist_path)
 
-    if os.path.isdir(path) and path not in whitelist:
-        d_inode, d_size, d_m_time, d_a_time, d_path, is_fragment_directory = __check_fragment_directory__(path)
-        if is_fragment_directory == 'YES':
-            fragment_directory_list.append([str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
-
 #############################################################################################
 # Only a subitem which are from a non-fragment directory could join the following scanning, #
 # if not, this following scanning will stop                                                 #
 #############################################################################################
+
+    if os.path.isdir(path) and path not in whitelist:
+        d_inode, d_size, d_m_time, d_a_time, d_path, is_fragment_directory = __check_fragment_directory__(path)
+        if is_fragment_directory == 'YES':
+            fragment_directory_list.append([str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
 
         else:
             for subitem in os.listdir(path):
