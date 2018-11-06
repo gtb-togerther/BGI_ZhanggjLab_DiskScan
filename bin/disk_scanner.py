@@ -138,6 +138,10 @@ def traverse_directory(path, whitelist_path):
                     l_path, is_broken_link = __check_broken_link__(item_name)
                     if is_broken_link == 'YES':
                         broken_link_list.append(l_path)
+                else:
+                    print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a file or a link'
+    else:
+        print >> sys.stderr, 'Warning: The inputting root path should be either a directory or a symbolic link pointed by a directory'
 
     return (fragment_directory_list, large_file_list, broken_link_list)
 
@@ -162,5 +166,6 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list):
 
 
 if __name__ == '__main__':
-    fragment_directory_list, large_file_list, broken_link_list = traverse_directory(os.path.abspath(sys.argv[1]), os.path.abspath(sys.argv[2]))
+    fragment_directory_list, large_file_list, broken_link_list = traverse_directory(os.path.realpath(os.path.abspath(sys.argv[1])), \
+                                                                                    os.path.realpath(os.path.abspath(sys.argv[2])))
     order_report(fragment_directory_list, large_file_list, broken_link_list)
