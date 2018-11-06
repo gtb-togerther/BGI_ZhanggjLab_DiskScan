@@ -123,10 +123,12 @@ def order_report(fragment_directory_list, large_file_list):
     'To order all the scanned result into a report'
 
     with open('fragment_directory.report.txt', 'wb') as fragment_directory_outFH:
+        print >> fragment_directory_outFH, '#INODE\tNUM_of_SUBITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
         for i in fragment_directory_list:
             print >> fragment_directory_outFH, '\t'.join(i)
 
     with open('large_file.report.txt', 'wb') as large_file_outFH:
+        print >> large_file_outFH, '#INODE\tSIZE_of_ITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
         for i in large_file_list:
             print >> large_file_outFH, '\t'.join(i)
 
