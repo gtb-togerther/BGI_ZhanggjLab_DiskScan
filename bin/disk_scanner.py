@@ -139,7 +139,7 @@ def traverse_directory(path, whitelist_path):
                     if is_broken_link == 'YES':
                         broken_link_list.append(l_path)
                 else:
-                    print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a file or a link'
+                    print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a normal file as well as a symbolic link'
     else:
         print >> sys.stderr, 'Warning: The inputting root path should be either a directory or a symbolic link pointed by a directory'
 
