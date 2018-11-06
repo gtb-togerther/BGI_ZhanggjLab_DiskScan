@@ -108,17 +108,18 @@ def traverse_directory(path, whitelist_path):
         if is_fragment_directory == 'YES':
             fragment_directory_list.append([str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
 
-#####################################################################################################
-# Only a subitem which are from non-fragment directory could join the following large file scanning #
-#####################################################################################################
+#############################################################################################
+# Only a subitem which are from a non-fragment directory could join the following scanning, #
+# if not, this following scanning will stop                                                 #
+#############################################################################################
 
         else:
             for subitem in os.listdir(path):
                 item_name = os.path.join(path, subitem)
 
-######################################################################################
-# If a subdirectory is in a non-fragment directory, it should be scanned recursively #
-######################################################################################
+#####################################################################################
+# If a subdirectory is in a non-fragment directory, it would be scanned recursively #
+#####################################################################################
 
                 if os.path.isdir(item_name):
                     frag_dir_lst, larg_fil_lst, brok_lnk_lst = traverse_directory(item_name, whitelist_path)
@@ -134,10 +135,20 @@ def traverse_directory(path, whitelist_path):
                     f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
                     if is_large_file == 'YES':
                         large_file_list.append([str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
+
+############################################
+# A broken symbolic link would be recorded #
+############################################
+
                 elif os.path.islink(item_name) and item_name not in whitelist:
                     l_path, is_broken_link = __check_broken_link__(item_name)
                     if is_broken_link == 'YES':
                         broken_link_list.append(l_path)
+
+##############################################################
+# An error would be raised if the type of an item is unknown #
+##############################################################
+
                 else:
                     print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a normal file as well as a symbolic link'
     else:
