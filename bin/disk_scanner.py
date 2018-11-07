@@ -13,11 +13,15 @@
                 Initiation
         v0.2
             2018-11-06
-                To add function for checking and outputting brocken links
+                To add a function for checking and outputting brocken links
         v0.3
             2018-11-06
                 To make the value of "SIZE_of_ITEM" in large file output
                 more readable
+        v1.0
+            2018-11-07
+                To add a function for checking and outputting directories 
+                if which would be not accessible
 
 '''
 
@@ -76,6 +80,18 @@ def __check_broken_link__(link_path):
     return (link_path, is_broken_link)
 
 
+def __check_accessible_directory__(path):
+    'To judge whether a directory is accessible'
+
+    is_accessible_directory = 'NO'
+
+    if os.path.isdir(path):
+        if os.access(path, os.R_OK) and os.access(path, os.X_OK):
+            is_accessible_directory = 'YES'
+
+    return is_accessible_directory
+
+
 def __whitelist__(whitelist_path):
     'To initial the whitelist for ignoring when scanning'
 
@@ -100,8 +116,16 @@ def traverse_directory(path, whitelist_path):
     fragment_directory_list = []
     large_file_list = []
     broken_link_list = []
+    nonAccessible_directory_list = []
 
     whitelist = __whitelist__(whitelist_path)
+
+############################################
+# Only an accessible item could be scanned #
+############################################
+
+    root_accessible = __check_accessible_directory__(path)
+
 
 #############################################################################################
 # Only a subitem which are from a non-fragment directory could join the following scanning, #
@@ -109,55 +133,61 @@ def traverse_directory(path, whitelist_path):
 #############################################################################################
 
     if os.path.isdir(path) and path not in whitelist:
-        d_inode, d_size, d_m_time, d_a_time, d_path, is_fragment_directory = __check_fragment_directory__(path)
-        if is_fragment_directory == 'YES':
-            fragment_directory_list.append([str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
+        if root_accessible == 'YES':
+            d_inode, d_size, d_m_time, d_a_time, d_path, is_fragment_directory = __check_fragment_directory__(path)
+            if is_fragment_directory == 'YES':
+                fragment_directory_list.append([str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
+            else:
+                for subitem in os.listdir(path):
+                    item_name = os.path.join(path, subitem)
 
-        else:
-            for subitem in os.listdir(path):
-                item_name = os.path.join(path, subitem)
 
-#####################################################################################
-# If a subdirectory is in a non-fragment directory, it would be scanned recursively #
-#####################################################################################
+######################################################################################
+# If a subdirectory is in a non-fragment directory, it would be scanned recursively. #
+# Only an accessible item could be scanned                                           #
+######################################################################################
 
-                if os.path.isdir(item_name):
-                    frag_dir_lst, larg_fil_lst, brok_lnk_lst = traverse_directory(item_name, whitelist_path)
-                    fragment_directory_list.extend(frag_dir_lst)
-                    large_file_list.extend(larg_fil_lst)
-                    broken_link_list.extend(brok_lnk_lst)
+
+                    if os.path.isdir(item_name):
+                        frag_dir_lst, larg_fil_lst, brok_lnk_lst, nonA_dir_list = traverse_directory(item_name, whitelist_path)
+                        fragment_directory_list.extend(frag_dir_lst)
+                        large_file_list.extend(larg_fil_lst)
+                        broken_link_list.extend(brok_lnk_lst)
+                        nonAccessible_directory_list.extend(nonA_dir_list)
 
 ###########################################################
 # An uncompressed large files should be recorded directly #
 ###########################################################
 
-                elif os.path.isfile(item_name) and item_name not in whitelist:
-                    f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
-                    if is_large_file == 'YES':
-                        large_file_list.append([str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
+                    elif os.path.isfile(item_name) and item_name not in whitelist:
+                        f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
+                        if is_large_file == 'YES':
+                            large_file_list.append([str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
 
 ############################################
 # A broken symbolic link would be recorded #
 ############################################
 
-                elif os.path.islink(item_name) and item_name not in whitelist:
-                    l_path, is_broken_link = __check_broken_link__(item_name)
-                    if is_broken_link == 'YES':
-                        broken_link_list.append(l_path)
+                    elif os.path.islink(item_name) and item_name not in whitelist:
+                        l_path, is_broken_link = __check_broken_link__(item_name)
+                        if is_broken_link == 'YES':
+                            broken_link_list.append(l_path)
 
 ##############################################################
 # An error would be raised if the type of an item is unknown #
 ##############################################################
 
-                else:
-                    print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a normal file as well as a symbolic link'
+                    else:
+                        print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a normal file as well as a symbolic link'
+        else:
+            nonAccessible_directory_list.append(path)
     else:
         print >> sys.stderr, 'Warning: The inputting root path should be either a directory or a symbolic link pointed by a directory'
 
-    return (fragment_directory_list, large_file_list, broken_link_list)
+    return (fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list)
 
 
-def order_report(fragment_directory_list, large_file_list, broken_link_list):
+def order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list):
     'To order all the scanned result into a report'
 
     with open('fragment_directory.report.txt', 'wb') as fragment_directory_outFH:
@@ -175,8 +205,13 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list):
         for i in broken_link_list:
             print >> broken_link_outFH, i
 
+    with open('nonAccessible_item.report.txt', 'wb') as nonAccessible_directory_outFH:
+        print >> nonAccessible_directory_outFH, '#BROKEN_LINK_PATH'
+        for i in nonAccessible_directory_list:
+            print >> nonAccessible_directory_outFH, i
+
 
 if __name__ == '__main__':
-    fragment_directory_list, large_file_list, broken_link_list = traverse_directory(os.path.realpath(os.path.abspath(sys.argv[1])), \
-                                                                                    os.path.realpath(os.path.abspath(sys.argv[2])))
-    order_report(fragment_directory_list, large_file_list, broken_link_list)
+    fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list = traverse_directory(os.path.abspath(sys.argv[1]), \
+                                                                                                                  os.path.abspath(sys.argv[2]))
+    order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list)
