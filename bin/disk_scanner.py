@@ -121,7 +121,7 @@ def traverse_directory(path, whitelist_path):
     whitelist = __whitelist__(whitelist_path)
 
 ############################################
-# Only an accessible item could be scanned #
+# An accessible directory could be scanned #
 ############################################
 
     root_accessible = __check_accessible_directory__(path)
@@ -144,7 +144,7 @@ def traverse_directory(path, whitelist_path):
 
 ######################################################################################
 # If a subdirectory is in a non-fragment directory, it would be scanned recursively. #
-# Only an accessible item could be scanned                                           #
+# An accessible directory could be scanned                                           #
 ######################################################################################
 
 
