@@ -205,8 +205,8 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
         for i in broken_link_list:
             print >> broken_link_outFH, i
 
-    with open('nonAccessible_item.report.txt', 'wb') as nonAccessible_directory_outFH:
-        print >> nonAccessible_directory_outFH, '#BROKEN_LINK_PATH'
+    with open('nonAccessible_directory.report.txt', 'wb') as nonAccessible_directory_outFH:
+        print >> nonAccessible_directory_outFH, '#NON-ACCESSIBLE_DIRECTORY_PATH'
         for i in nonAccessible_directory_list:
             print >> nonAccessible_directory_outFH, i
 
