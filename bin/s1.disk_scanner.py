@@ -83,15 +83,17 @@ def __check_broken_link__(link_path):
     return (link_path, is_broken_link)
 
 
-def __check_accessible_directory__(path):
+def __check_accessible_directory__(directory_path):
     'To judge whether a directory is accessible'
 
     is_accessible_directory = 'NO'
 
-    if os.access(path, os.R_OK) and os.access(path, os.X_OK):
+    directory_inode = os.stat(directory_path).st_ino
+
+    if os.access(directory_path, os.R_OK) and os.access(directory_path, os.X_OK):
         is_accessible_directory = 'YES'
 
-    return is_accessible_directory
+    return (directory_inode, is_accessible_directory)
 
 
 def __whitelist__(whitelist_path):
@@ -126,7 +128,7 @@ def traverse_directory(path, whitelist_path):
 # An accessible directory could be scanned #
 ############################################
 
-    root_accessible = __check_accessible_directory__(path)
+    root_inode, root_accessible = __check_accessible_directory__(path)
 
 
 #############################################################################################
@@ -180,7 +182,7 @@ def traverse_directory(path, whitelist_path):
                     else:
                         print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a normal file as well as a symbolic link'
         else:
-            nonAccessible_directory_list.append(path)
+            nonAccessible_directory_list.append([str(root_inode), path])
     else:
         print >> sys.stderr, 'Warning: The inputting root path should be either a directory or a symbolic link pointed by a directory'
 
@@ -209,9 +211,9 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
             print >> broken_link_outFH, i
 
     with open(outdir + '/' + prefix + '.nonAccessible_directory.report.txt', 'wb') as nonAccessible_directory_outFH:
-        print >> nonAccessible_directory_outFH, '#NON-ACCESSIBLE_DIRECTORY_PATH'
+        print >> nonAccessible_directory_outFH, '#INODE\tNON-ACCESSIBLE_DIRECTORY_PATH'
         for i in nonAccessible_directory_list:
-            print >> nonAccessible_directory_outFH, i
+            print >> nonAccessible_directory_outFH, '\t'.join(i)
 
 
 if __name__ == '__main__':

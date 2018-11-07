@@ -44,11 +44,15 @@ def __stat_nonAccessible_directory__(parsed_result_box):
     pass
 
 
-def combine_result(result_dir_path_list):
+def combine_result(result_path_list):
     'This function is used for combining all the separate result into one box'
 
-    for result_dir_path in result_dir_path_list:
-        pass
+    result_box = {}
+
+    for result_path in result_path_list:
+        with open(result_path, 'rb') as fh:
+            for l in fh:
+                l = l.split()
 
 
 def compare_newAndOld_results(new_result_box, old_result_box):
