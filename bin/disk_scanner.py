@@ -85,9 +85,8 @@ def __check_accessible_directory__(path):
 
     is_accessible_directory = 'NO'
 
-    if os.path.isdir(path):
-        if os.access(path, os.R_OK) and os.access(path, os.X_OK):
-            is_accessible_directory = 'YES'
+    if os.access(path, os.R_OK) and os.access(path, os.X_OK):
+        is_accessible_directory = 'YES'
 
     return is_accessible_directory
 
