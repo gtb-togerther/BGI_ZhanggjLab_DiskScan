@@ -22,6 +22,9 @@
             2018-11-07
                 To add a function for checking and outputting directories 
                 if which would be not accessible
+        v1.1
+            2018-11-07
+                To make an output directory for putting results in order
 
 '''
 
@@ -140,12 +143,10 @@ def traverse_directory(path, whitelist_path):
                 for subitem in os.listdir(path):
                     item_name = os.path.join(path, subitem)
 
-
 ######################################################################################
 # If a subdirectory is in a non-fragment directory, it would be scanned recursively. #
 # An accessible directory could be scanned                                           #
 ######################################################################################
-
 
                     if os.path.isdir(item_name):
                         frag_dir_lst, larg_fil_lst, brok_lnk_lst, nonA_dir_list = traverse_directory(item_name, whitelist_path)
@@ -186,25 +187,28 @@ def traverse_directory(path, whitelist_path):
     return (fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list)
 
 
-def order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list):
+def order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list, prefix):
     'To order all the scanned result into a report'
 
-    with open('fragment_directory.report.txt', 'wb') as fragment_directory_outFH:
+    outdir = 'scanning_result.' + datetime.datetime.today().strftime("%Y-%m-%d")
+    os.mkdir(outdir, 0755)
+
+    with open(outdir + '/' + prefix + '.fragment_directory.report.txt', 'wb') as fragment_directory_outFH:
         print >> fragment_directory_outFH, '#INODE\tNUM_of_SUBITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
         for i in fragment_directory_list:
             print >> fragment_directory_outFH, '\t'.join(i)
 
-    with open('large_file.report.txt', 'wb') as large_file_outFH:
+    with open(outdir + '/' + prefix + '.large_file.report.txt', 'wb') as large_file_outFH:
         print >> large_file_outFH, '#INODE\tSIZE_of_ITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
         for i in large_file_list:
             print >> large_file_outFH, '\t'.join(i)
 
-    with open('brocken_link.report.txt', 'wb') as broken_link_outFH:
+    with open(outdir + '/' + prefix + '.brocken_link.report.txt', 'wb') as broken_link_outFH:
         print >> broken_link_outFH, '#BROKEN_LINK_PATH'
         for i in broken_link_list:
             print >> broken_link_outFH, i
 
-    with open('nonAccessible_directory.report.txt', 'wb') as nonAccessible_directory_outFH:
+    with open(outdir + '/' + prefix + '.nonAccessible_directory.report.txt', 'wb') as nonAccessible_directory_outFH:
         print >> nonAccessible_directory_outFH, '#NON-ACCESSIBLE_DIRECTORY_PATH'
         for i in nonAccessible_directory_list:
             print >> nonAccessible_directory_outFH, i
@@ -213,4 +217,7 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
 if __name__ == '__main__':
     fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list = traverse_directory(os.path.abspath(sys.argv[1]), \
                                                                                                                   os.path.abspath(sys.argv[2]))
-    order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list)
+
+    prefix = sys.argv[3] if len(sys.argv) == 4 else 'output'
+
+    order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list, prefix)
