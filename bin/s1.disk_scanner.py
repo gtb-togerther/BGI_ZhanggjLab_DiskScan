@@ -20,17 +20,22 @@
                 more readable
         v1.0
             2018-11-07
-                To add a function for checking and outputting directories 
+                To add a function for checking and outputting directories
                 if which would be not accessible
         v1.1
             2018-11-07
                 To make an output directory for putting results in order
+        v1.2
+            2018-11-08
+                To get and output the owner info of a directory or a file,
+                and insert the class on the head of output
 
 '''
 
 
 import sys
 import os
+import pwd
 import datetime
 import filetype
 
@@ -40,6 +45,7 @@ def __check_fragment_directory__(directory_path):
 
     is_fragment_directory = 'NO'
 
+    directory_owner = pwd.getpwuid(os.stat(directory_path).st_uid).pw_name
     directory_inode = os.stat(directory_path).st_ino
     modif_time = datetime.datetime.fromtimestamp(os.path.getmtime(directory_path)).strftime("%Y-%m-%d")
     access_time = datetime.datetime.fromtimestamp(os.path.getatime(directory_path)).strftime("%Y-%m-%d")
@@ -49,7 +55,7 @@ def __check_fragment_directory__(directory_path):
     if directory_size > 500:
         is_fragment_directory = 'YES'
 
-    return (directory_inode, directory_size, modif_time, access_time, directory_path, is_fragment_directory)
+    return (directory_owner, directory_inode, directory_size, modif_time, access_time, directory_path, is_fragment_directory)
 
 
 def __check_large_file__(file_path):
@@ -57,6 +63,7 @@ def __check_large_file__(file_path):
 
     is_large_file = 'NO'
 
+    file_owner = pwd.getpwuid(os.stat(file_path).st_uid).pw_name
     file_inode = os.stat(file_path).st_ino
     modif_time = datetime.datetime.fromtimestamp(os.path.getmtime(file_path)).strftime("%Y-%m-%d")
     access_time = datetime.datetime.fromtimestamp(os.path.getatime(file_path)).strftime("%Y-%m-%d")
@@ -69,7 +76,7 @@ def __check_large_file__(file_path):
         if not file_type:
             is_large_file = 'YES'
 
-    return (file_inode, file_size, modif_time, access_time, file_path, is_large_file)
+    return (file_owner, file_inode, file_size, modif_time, access_time, file_path, is_large_file)
 
 
 def __check_broken_link__(link_path):
@@ -77,10 +84,11 @@ def __check_broken_link__(link_path):
 
     is_broken_link = 'NO'
 
+    link_owner = pwd.getpwuid(os.stat(link_path).st_uid).pw_name
     if os.path.lexists(link_path):
         is_broken_link = 'YES'
 
-    return (link_path, is_broken_link)
+    return (link_owner, link_path, is_broken_link)
 
 
 def __check_accessible_directory__(directory_path):
@@ -88,12 +96,13 @@ def __check_accessible_directory__(directory_path):
 
     is_accessible_directory = 'NO'
 
+    directory_owner = pwd.getpwuid(os.stat(directory_path).st_uid).pw_name
     directory_inode = os.stat(directory_path).st_ino
 
     if os.access(directory_path, os.R_OK) and os.access(directory_path, os.X_OK):
         is_accessible_directory = 'YES'
 
-    return (directory_inode, is_accessible_directory)
+    return (directory_owner, directory_inode, is_accessible_directory)
 
 
 def __whitelist__(whitelist_path):
@@ -128,7 +137,7 @@ def traverse_directory(path, whitelist_path):
 # An accessible directory could be scanned #
 ############################################
 
-    root_inode, root_accessible = __check_accessible_directory__(path)
+    root_owner, root_inode, root_accessible = __check_accessible_directory__(path)
 
 
 #############################################################################################
@@ -138,9 +147,9 @@ def traverse_directory(path, whitelist_path):
 
     if os.path.isdir(path) and path not in whitelist:
         if root_accessible == 'YES':
-            d_inode, d_size, d_m_time, d_a_time, d_path, is_fragment_directory = __check_fragment_directory__(path)
+            d_owner, d_inode, d_size, d_m_time, d_a_time, d_path, is_fragment_directory = __check_fragment_directory__(path)
             if is_fragment_directory == 'YES':
-                fragment_directory_list.append([str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
+                fragment_directory_list.append([d_owner, str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
             else:
                 for subitem in os.listdir(path):
                     item_name = os.path.join(path, subitem)
@@ -162,18 +171,18 @@ def traverse_directory(path, whitelist_path):
 ###########################################################
 
                     elif os.path.isfile(item_name) and item_name not in whitelist:
-                        f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
+                        f_owner, f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
                         if is_large_file == 'YES':
-                            large_file_list.append([str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
+                            large_file_list.append([f_owner, str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
 
 ############################################
 # A broken symbolic link would be recorded #
 ############################################
 
                     elif os.path.islink(item_name) and item_name not in whitelist:
-                        l_path, is_broken_link = __check_broken_link__(item_name)
+                        l_owner, l_path, is_broken_link = __check_broken_link__(item_name)
                         if is_broken_link == 'YES':
-                            broken_link_list.append(l_path)
+                            broken_link_list.append(l_owner, l_path)
 
 ##############################################################
 # An error would be raised if the type of an item is unknown #
@@ -182,7 +191,7 @@ def traverse_directory(path, whitelist_path):
                     else:
                         print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a normal file as well as a symbolic link'
         else:
-            nonAccessible_directory_list.append([str(root_inode), path])
+            nonAccessible_directory_list.append([root_owner, str(root_inode), path])
     else:
         print >> sys.stderr, 'Warning: The inputting root path should be either a directory or a symbolic link pointed by a directory'
 
@@ -193,27 +202,28 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
     'To order all the scanned result into a report'
 
     outdir = 'scanning_result.' + datetime.datetime.today().strftime("%Y-%m-%d")
-    os.mkdir(outdir, 0755)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir, 0755)
 
     with open(outdir + '/' + prefix + '.fragment_directory.report.txt', 'wb') as fragment_directory_outFH:
-        print >> fragment_directory_outFH, '#INODE\tNUM_of_SUBITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
+        print >> fragment_directory_outFH, '#CLASS\tOWNER\tINODE\tNUM_of_SUBITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
         for i in fragment_directory_list:
-            print >> fragment_directory_outFH, '\t'.join(i)
+            print >> fragment_directory_outFH, 'FD\t' + '\t'.join(i)
 
     with open(outdir + '/' + prefix + '.large_file.report.txt', 'wb') as large_file_outFH:
-        print >> large_file_outFH, '#INODE\tSIZE_of_ITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
+        print >> large_file_outFH, '#CLASS\tOWNER\tINODE\tSIZE_of_ITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
         for i in large_file_list:
-            print >> large_file_outFH, '\t'.join(i)
+            print >> large_file_outFH, 'LF\t' + '\t'.join(i)
 
     with open(outdir + '/' + prefix + '.brocken_link.report.txt', 'wb') as broken_link_outFH:
-        print >> broken_link_outFH, '#BROKEN_LINK_PATH'
+        print >> broken_link_outFH, '#CLASS\tOWNER\tBROKEN_LINK_PATH'
         for i in broken_link_list:
-            print >> broken_link_outFH, i
+            print >> broken_link_outFH, 'BL' + i
 
     with open(outdir + '/' + prefix + '.nonAccessible_directory.report.txt', 'wb') as nonAccessible_directory_outFH:
-        print >> nonAccessible_directory_outFH, '#INODE\tNON-ACCESSIBLE_DIRECTORY_PATH'
+        print >> nonAccessible_directory_outFH, '#CLASS\tOWNER\tINODE\tNON-ACCESSIBLE_DIRECTORY_PATH'
         for i in nonAccessible_directory_list:
-            print >> nonAccessible_directory_outFH, '\t'.join(i)
+            print >> nonAccessible_directory_outFH, 'nAD' + '\t'.join(i)
 
 
 if __name__ == '__main__':
