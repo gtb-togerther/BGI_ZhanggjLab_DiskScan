@@ -227,9 +227,11 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
 
 
 if __name__ == '__main__':
-    fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list = traverse_directory(os.path.abspath(sys.argv[1]), \
-                                                                                                                  os.path.abspath(sys.argv[2]))
+    try:
+        fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list = traverse_directory(os.path.abspath(sys.argv[1]), \
+                                                                                                                      os.path.abspath(sys.argv[2]))
 
-    prefix = sys.argv[3] if len(sys.argv) == 4 else 'output'
-
-    order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list, prefix)
+        prefix = sys.argv[3] if sys.argv[3] else 'output'
+        order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list, prefix)
+    except (IOError,IndexError):
+        print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <targe_dir> <whitelist> [prefix]'
