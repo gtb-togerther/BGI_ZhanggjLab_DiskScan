@@ -179,9 +179,9 @@ def traverse_directory(path, whitelist_path):
 ############################################
 
                     elif os.path.islink(item_name) and item_name not in whitelist:
-                        l_owner, l_path, is_broken_link = __check_broken_link__(item_name)
+                        l_path, is_broken_link = __check_broken_link__(item_name)
                         if is_broken_link == 'YES':
-                            broken_link_list.append(l_owner, l_path)
+                            broken_link_list.append(l_path)
 
 ##############################################################
 # An error would be raised if the type of an item is unknown #
