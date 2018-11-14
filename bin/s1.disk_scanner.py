@@ -84,11 +84,10 @@ def __check_broken_link__(link_path):
 
     is_broken_link = 'NO'
 
-    link_owner = pwd.getpwuid(os.stat(link_path).st_uid).pw_name
     if os.path.lexists(link_path):
         is_broken_link = 'YES'
 
-    return (link_owner, link_path, is_broken_link)
+    return (link_path, is_broken_link)
 
 
 def __check_accessible_directory__(directory_path):
@@ -216,7 +215,7 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
             print >> large_file_outFH, 'LF\t' + '\t'.join(i)
 
     with open(outdir + '/' + prefix + '.brocken_link.report.txt', 'wb') as broken_link_outFH:
-        print >> broken_link_outFH, '#CLASS\tOWNER\tBROKEN_LINK_PATH'
+        print >> broken_link_outFH, '#CLASS\tBROKEN_LINK_PATH'
         for i in broken_link_list:
             print >> broken_link_outFH, 'BL' + i
 
