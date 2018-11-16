@@ -217,12 +217,12 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
     with open(outdir + '/' + prefix + '.brocken_link.report.txt', 'wb') as broken_link_outFH:
         print >> broken_link_outFH, '#CLASS\tBROKEN_LINK_PATH'
         for i in broken_link_list:
-            print >> broken_link_outFH, 'BL' + i
+            print >> broken_link_outFH, 'BL\t' + i
 
     with open(outdir + '/' + prefix + '.nonAccessible_directory.report.txt', 'wb') as nonAccessible_directory_outFH:
         print >> nonAccessible_directory_outFH, '#CLASS\tOWNER\tINODE\tNON-ACCESSIBLE_DIRECTORY_PATH'
         for i in nonAccessible_directory_list:
-            print >> nonAccessible_directory_outFH, 'nAD' + '\t'.join(i)
+            print >> nonAccessible_directory_outFH, 'nAD\t' + '\t'.join(i)
 
 
 if __name__ == '__main__':
