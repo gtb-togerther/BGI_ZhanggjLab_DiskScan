@@ -169,7 +169,7 @@ def traverse_directory(path, whitelist_path):
 # An uncompressed large files should be recorded directly #
 ###########################################################
 
-                    elif os.path.isfile(item_name) and item_name not in whitelist:
+                    elif os.path.isfile(item_name) and not os.path.islink(item_name) and item_name not in whitelist:
                         f_owner, f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
                         if is_large_file == 'YES':
                             large_file_list.append([f_owner, str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
