@@ -95,7 +95,7 @@ def compare_newAndOld_results(new_result_box, old_result_box = None):
                     noHandle_item_box[record_class].update({record_owner:[]})
 
                 for record_inode in new_result_box[record_class][record_owner]:
-                    if old_result_box and old_result_box[record_class][record_owner][record_inode]:
+                    if old_result_box and old_result_box[record_class][record_owner].has_key(record_inode):
                         noHandle_item_box[record_class][record_owner].append([record_class,record_owner,\
                                                                               new_result_box[record_class][record_owner][record_inode],\
                                                                               old_result_box[record_class][record_owner][record_inode],'UH'])
