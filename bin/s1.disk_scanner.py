@@ -158,7 +158,7 @@ def traverse_directory(path, whitelist_path):
 # An accessible directory could be scanned                                           #
 ######################################################################################
 
-                    if os.path.isdir(item_name):
+                    if os.path.isdir(item_name) and not os.path.islink(item_name) and item_name not in whitelist:
                         frag_dir_lst, larg_fil_lst, brok_lnk_lst, nonA_dir_list = traverse_directory(item_name, whitelist_path)
                         fragment_directory_list.extend(frag_dir_lst)
                         large_file_list.extend(larg_fil_lst)
