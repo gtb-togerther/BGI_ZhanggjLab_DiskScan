@@ -138,7 +138,6 @@ def traverse_directory(path, whitelist_path):
 
     root_owner, root_inode, root_accessible = __check_accessible_directory__(path)
 
-
 #############################################################################################
 # Only a subitem which are from a non-fragment directory could join the following scanning, #
 # if not, this following scanning will stop                                                 #
