@@ -69,13 +69,23 @@ def combine_result(input_list):
                     time_now = time.strptime(str(datetime.date.today()), "%Y-%m-%d")
                     time_now = datetime.datetime(time_now[0], time_now[1], time_now[2])
 
-                    time_rec = time.strptime(record_mtime, "%Y-%m-%d")
-                    time_rec = datetime.datetime(time_rec[0], time_rec[1], time_rec[2])
+                    time_rec_m = time.strptime(record_mtime, "%Y-%m-%d")
+                    time_rec_m = datetime.datetime(time_rec_m[0], time_rec_m[1], time_rec_m[2])
 
-                    if 'days' in str(time_now - time_rec):
-                        l = str(time_now - time_rec).split()
+                    time_rec_a = time.strptime(record_atime, "%Y-%m-%d")
+                    time_rec_a = datetime.datetime(time_rec_a[0], time_rec_a[1], time_rec_a[2])
 
-                        if int(l[0]) < 90:
+                    m = str(time_now - time_rec_m)
+                    n = str(time_now - time_rec_a)
+
+                    if 'days' in m and 'days' in n:
+                        m = m.split()
+                        n = n.split()
+
+                        if int(m[0]) <= 180:
+                            continue
+
+                        if int(n[0]) <= 90:
                             continue
 
                     else:
