@@ -180,14 +180,22 @@ def report_result(compared_result_box):
 
 if __name__ == '__main__':
 
-        fh_output = open(sys.argv[1] + '.output.txt', 'wb')
-        fh_report = open(sys.argv[1] + '.report.txt', 'wb')
+    name = 'NO_NAME'
 
-    #try:
-        if len(sys.argv) == 4:
-            outbox = compare_newAndOld_results(combine_result([sys.argv[2],]), combine_result([sys.argv[3],]))
+    if len(sys.argv) == 3:
+        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
+
+    else:
+        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
+
+    fh_output = open(name + '.output.txt', 'wb')
+    fh_report = open(name + '.report.txt', 'wb')
+
+    try:
+        if len(sys.argv) == 3:
+            outbox = compare_newAndOld_results(combine_result([sys.argv[1],]), combine_result([sys.argv[2],]))
         else:
-            outbox = compare_newAndOld_results(combine_result([sys.argv[2],]))
+            outbox = compare_newAndOld_results(combine_result([sys.argv[1],]))
 
         for record_class in outbox:
             for record_owner in outbox[record_class]:
@@ -204,7 +212,7 @@ if __name__ == '__main__':
                 consumed_ration = '-'
 
                 if report_box[report_owner][report_class]['old'] > 0:
-                    consumed_ration = '%.4f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'])
+                    consumed_ration = '%.6f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'] * 1000)
 
                 if report_class == 'LF':
                     print >> fh_report, '%18s         LF: %12.2f Gb   || %12.2f Gb%20s' % (report_owner,
@@ -219,5 +227,5 @@ if __name__ == '__main__':
                                                                              consumed_ration)
 
         fh_report.close()
-    #except:
-        #print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <prefix> <scanning outdir> [old scanning outdir]'
+    except:
+        print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'

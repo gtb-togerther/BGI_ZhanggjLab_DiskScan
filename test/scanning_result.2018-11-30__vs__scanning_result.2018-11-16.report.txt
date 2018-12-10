@@ -1,0 +1,51 @@
+           P_bc_rd         FD:        16939      ||        16939            1000.000000
+           P_bc_rd         LF:         1.41 Gb   ||         1.41 Gb         1000.000000
+          bixupeng         FD:       531459      ||       523873            1000.000000
+          bixupeng         LF:      6270.55 Gb   ||      2569.59 Gb         2440.292031
+        chenwanjun         FD:         9519      ||         9519            1000.000000
+        chenwanjun         LF:         0.99 Gb   ||         0.99 Gb         1000.000000
+        chenwanjun        nAD:           16      ||           16            1000.000000
+          database         FD:         4122      ||         4122            1000.000000
+          database         LF:        41.31 Gb   ||        41.31 Gb         1000.000000
+          database        nAD:            1      ||            1            1000.000000
+          dengyuan         FD:        43452      ||        43452            1000.000000
+            fangqi         FD:          627      ||          627            1000.000000
+            fangqi         LF:        10.66 Gb   ||        10.66 Gb         1000.000000
+            fangqi        nAD:           25      ||           25            1000.000000
+      fengshaohong         LF:        12.76 Gb   ||        12.76 Gb         1000.000000
+        guochunxue         LF:         6.91 Gb   ||         6.91 Gb         1000.000000
+          heyuming         FD:        31230      ||        31230            1000.000000
+          heyuming         LF:        40.47 Gb   ||        40.47 Gb         1000.000000
+          heyuming        nAD:            1      ||            1            1000.000000
+        liushanlin         FD:        29625      ||        29625            1000.000000
+        liushanlin         LF:       139.58 Gb   ||       139.58 Gb         1000.000000
+            lizhan         FD:        11557      ||        11557            1000.000000
+            lizhan         LF:       805.14 Gb   ||       805.14 Gb         1000.000000
+         panhailin         LF:        24.05 Gb   ||        22.48 Gb         1069.839858
+              root        nAD:            2      ||            1            2000.000000
+      songzhenzhen         FD:        61083      ||        60483            1000.000000
+      songzhenzhen         LF:      3403.07 Gb   ||      3394.29 Gb         1002.586697
+      songzhenzhen        nAD:            3      ||            3            1000.000000
+      st_diversity         FD:         7835      ||         7835            1000.000000
+      st_diversity         LF:        64.36 Gb   ||        64.36 Gb         1000.000000
+       tanshangjin         FD:        21488      ||        21454            1000.000000
+       tanshangjin         LF:       101.76 Gb   ||        63.47 Gb         1603.277139
+       tanshangjin        nAD:            2      ||            2            1000.000000
+            wangzj         FD:         8322      ||         8322            1000.000000
+            wangzj        nAD:            2      ||            2            1000.000000
+            xieduo         FD:        17275      ||        17275            1000.000000
+            xieduo         LF:         6.19 Gb   ||         6.19 Gb         1000.000000
+            xieduo        nAD:            3      ||            3            1000.000000
+           xiongzj        nAD:            4      ||            4            1000.000000
+       yangchentao         FD:         2852      ||         2852            1000.000000
+       yangchentao         LF:       192.86 Gb   ||       192.86 Gb         1000.000000
+             yuhao         FD:         2571      ||         2571            1000.000000
+             yuhao         LF:       349.73 Gb   ||        75.82 Gb         4612.635189
+             yuhao        nAD:            2      ||            2            1000.000000
+         zhengjiao         LF:      1620.54 Gb   ||         0.00 Gb                   -
+      zhouchengran         FD:          570      ||          570            1000.000000
+      zhouchengran         LF:        51.91 Gb   ||        51.91 Gb         1000.000000
+      zhouchengran        nAD:            1      ||            1            1000.000000
+          zhouyang         FD:         3156      ||         3156            1000.000000
+          zhouyang         LF:       413.59 Gb   ||       413.59 Gb         1000.000000
+          zhouyang        nAD:            4      ||            0                      -
