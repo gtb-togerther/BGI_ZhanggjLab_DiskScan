@@ -15,14 +15,19 @@
             2018-11-15
                 To use a new data structure
         v1.0
-            2018-11-15
+            2018-12-10
                 To add report function
+        v1.1
+            2018-12-10
+                To add a function for judging modify time
 
 '''
 
 
 import sys
 import os
+import time
+import datetime
 
 
 def combine_result(input_list):
@@ -60,6 +65,21 @@ def combine_result(input_list):
                     record_size = l[3]
                     record_mtime = l[4]
                     record_atime = l[5]
+
+                    time_now = time.strptime(str(datetime.date.today()), "%Y-%m-%d")
+                    time_now = datetime.datetime(time_now[0], time_now[1], time_now[2])
+
+                    time_rec = time.strptime(record_mtime, "%Y-%m-%d")
+                    time_rec = datetime.datetime(time_rec[0], time_rec[1], time_rec[2])
+
+                    if 'days' in str(time_now - time_rec):
+                        l = str(time_now - time_rec).split()
+
+                        if int(l[0]) < 90:
+                            continue
+
+                    else:
+                        continue
 
                     if not result_box[record_class].has_key(record_owner):
                         result_box[record_class].update({record_owner:{}})
@@ -171,18 +191,18 @@ def report_result(compared_result_box):
 
 if __name__ == '__main__':
 
-    name = 'NO_NAME'
+        name = 'NO_NAME'
 
-    if len(sys.argv) == 3:
-        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
+        if len(sys.argv) == 3:
+            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
 
-    else:
-        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
+        else:
+            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
 
-    fh_output = open(name + '.output.txt', 'wb')
-    fh_report = open(name + '.report.txt', 'wb')
+        fh_output = open(name + '.output.txt', 'wb')
+        fh_report = open(name + '.report.txt', 'wb')
 
-    try:
+    #try:
         if len(sys.argv) == 3:
             outbox = compare_newAndOld_results(combine_result([sys.argv[1],]), combine_result([sys.argv[2],]))
         else:
@@ -218,5 +238,5 @@ if __name__ == '__main__':
                                                                              consumed_ration)
 
         fh_report.close()
-    except:
-        print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
+    #except:
+        #print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
