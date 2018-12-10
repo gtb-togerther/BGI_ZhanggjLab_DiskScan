@@ -128,6 +128,10 @@ def report_result(compared_result_box):
     statisticsByOwner_box = {}
 
     for record_class in compared_result_box:
+
+        if record_class == 'BL':
+            continue
+
         for record_owner in compared_result_box[record_class]:
 
             if not statisticsByOwner_box.has_key(record_owner):
@@ -176,10 +180,10 @@ def report_result(compared_result_box):
 
 if __name__ == '__main__':
 
-    fh_output = open(sys.argv[1] + '.output.txt', 'wb')
-    fh_report = open(sys.argv[1] + '.report.txt', 'wb')
+        fh_output = open(sys.argv[1] + '.output.txt', 'wb')
+        fh_report = open(sys.argv[1] + '.report.txt', 'wb')
 
-    try:
+    #try:
         if len(sys.argv) == 4:
             outbox = compare_newAndOld_results(combine_result([sys.argv[2],]), combine_result([sys.argv[3],]))
         else:
@@ -190,6 +194,8 @@ if __name__ == '__main__':
                 for record in outbox[record_class][record_owner]:
                     print >> fh_output, '\t'.join([record[0], record[1], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]])
 
+        fh_output.close()
+
         report_box = report_result(outbox)
 
         for report_owner in sorted(report_box.keys()):
@@ -198,13 +204,20 @@ if __name__ == '__main__':
                 consumed_ration = '-'
 
                 if report_box[report_owner][report_class]['old'] > 0:
-                    consumed_ration = '%.2f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'] * 100)
+                    consumed_ration = '%.4f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'])
 
                 if report_class == 'LF':
-                    print >> fh_report, report_owner, '\t', report_class + ': ', str(report_box[report_owner][report_class]['new']) + 'G', '/', \
-                                                                                 str(report_box[report_owner][report_class]['old']) + 'G', '\t', consumed_ration
+                    print >> fh_report, '%18s         LF: %12.2f Gb   || %12.2f Gb%20s' % (report_owner,
+                                                                                           report_box[report_owner]['LF']['new'],
+                                                                                           report_box[report_owner]['LF']['old'],
+                                                                                           consumed_ration)
+
                 else:
-                    print >> fh_report, report_owner, '\t', report_class + ': ', str(report_box[report_owner][report_class]['new']), '/', \
-                                                                                 str(report_box[record_owner][record_class]['old']), '\t', consumed_ration
-    except:
-        print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <prefix> <scanning outdir> [old scanning outdir]'
+                    print >> fh_report, '%18s%11s: %12d      || %12d%23s' % (report_owner,report_class,
+                                                                             report_box[report_owner][report_class]['new'],
+                                                                             report_box[report_owner][report_class]['old'],
+                                                                             consumed_ration)
+
+        fh_report.close()
+    #except:
+        #print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <prefix> <scanning outdir> [old scanning outdir]'
