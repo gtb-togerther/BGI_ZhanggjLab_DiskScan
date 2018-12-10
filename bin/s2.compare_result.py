@@ -154,16 +154,7 @@ def report_result(compared_result_box):
                     else:
                         old_item_size = 0
 
-                elif record_class == 'FD':
-
-                    new_item_size = int(record[2][0])
-
-                    if record[3][0] != '-':
-                        old_item_size = int(record[3][0])
-                    else:
-                        old_item_size = 0
-
-                elif record_class == 'nAD':
+                else:
 
                     new_item_size = 1
 
