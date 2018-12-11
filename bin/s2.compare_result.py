@@ -262,18 +262,18 @@ def report_result(compared_result_box):
 
 if __name__ == '__main__':
 
-        name = 'NO_NAME'
+    name = 'NO_NAME'
 
-        if len(sys.argv) == 3:
-            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
+    if len(sys.argv) == 3:
+        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
 
-        else:
-            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
+    else:
+        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
 
-        fh_output = open(name + '.output.txt', 'wb')
-        fh_report = open(name + '.report.txt', 'wb')
+    fh_output = open(name + '.output.txt', 'wb')
+    fh_report = open(name + '.report.txt', 'wb')
 
-    #try:
+    try:
 
         if len(sys.argv) == 3:
             outbox = compare_newAndOld_results(combine_result([sys.argv[1],]), combine_result([sys.argv[2],]))
@@ -301,17 +301,17 @@ if __name__ == '__main__':
 
                 if report_class == 'LF':
                     print >> fh_report, '%18s         LF: %12.2f Gb   || %12.2f Gb%20s%20s' % (report_owner,
-                                                                                           report_box[report_owner]['LF']['new'],
-                                                                                           report_box[report_owner]['LF']['old'],
-                                                                                           report_box[report_owner]['LF']['unhandle_ratio'],consumed_ration)
+                                                                                               report_box[report_owner]['LF']['new'],
+                                                                                               report_box[report_owner]['LF']['old'],
+                                                                                               report_box[report_owner]['LF']['unhandle_ratio'],consumed_ration)
 
                 else:
                     print >> fh_report, '%18s%11s: %12d      || %12d%23s%20s' % (report_owner,report_class,
-                                                                             report_box[report_owner][report_class]['new'],
-                                                                             report_box[report_owner][report_class]['old'],
-                                                                             report_box[report_owner][report_class]['unhandle_ratio'],consumed_ration)
+                                                                                 report_box[report_owner][report_class]['new'],
+                                                                                 report_box[report_owner][report_class]['old'],
+                                                                                 report_box[report_owner][report_class]['unhandle_ratio'],consumed_ration)
 
         fh_report.close()
 
-    #except:
-        #print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
+    except:
+        print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
