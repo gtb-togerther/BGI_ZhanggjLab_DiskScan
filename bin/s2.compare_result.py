@@ -222,18 +222,18 @@ def report_result(compared_result_box):
 
 if __name__ == '__main__':
 
-        name = 'NO_NAME'
+    name = 'NO_NAME'
 
-        if len(sys.argv) == 3:
-            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
+    if len(sys.argv) == 3:
+        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
 
-        else:
-            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
+    else:
+        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
 
-        fh_output = open(name + '.output.txt', 'wb')
-        fh_report = open(name + '.report.txt', 'wb')
+    fh_output = open(name + '.output.txt', 'wb')
+    fh_report = open(name + '.report.txt', 'wb')
 
-    #try:
+    try:
 
         if len(sys.argv) == 3:
             outbox = compare_newAndOld_results(combine_result([sys.argv[1],]), combine_result([sys.argv[2],]))
@@ -273,5 +273,5 @@ if __name__ == '__main__':
 
         fh_report.close()
 
-    #except:
+    except:
         #print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
