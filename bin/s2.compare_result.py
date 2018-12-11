@@ -48,8 +48,11 @@ def combine_result(input_list):
     result_box = {'FD':{},'LF':{},'BL':[],'nAD':{}}
 
     for result_path in result_path_list:
+
         with open(result_path, 'rb') as fh:
+
             for l in fh:
+
                 l = l.split()
 
                 if l[0].startswith('#'):
@@ -58,11 +61,13 @@ def combine_result(input_list):
                 record_class = l[0]
 
                 if record_class == 'FD' or record_class == 'LF':
+
                     record_owner = l[1]
                     record_inode = l[2]
                     record_path = l[6]
 
                     record_size = l[3]
+
                     record_mtime = l[4]
                     record_atime = l[5]
 
@@ -79,6 +84,7 @@ def combine_result(input_list):
                     n = str(time_now - time_rec_a)
 
                     if 'days' in m and 'days' in n:
+
                         m = m.split()
                         n = n.split()
 
@@ -96,11 +102,15 @@ def combine_result(input_list):
 
                     if not result_box[record_class][record_owner].has_key(record_inode):
                         result_box[record_class][record_owner].update({record_inode:[record_size,record_mtime,record_atime,record_path]})
+
                 elif record_class == 'BL':
+
                     record_path = l[1]
 
                     result_box[record_class].append(record_path)
+
                 elif record_class == 'nAD':
+
                     record_owner = l[1]
                     record_inode = l[2]
                     record_path = l[3]
@@ -110,6 +120,7 @@ def combine_result(input_list):
 
                     if not result_box[record_class][record_owner].has_key(record_inode):
                         result_box[record_class][record_owner].update({record_inode:[record_path]})
+
                 else:
                     print >> sys.stderr, result_path + ' may be not your kind of record in disk-scanning'
 
@@ -122,15 +133,19 @@ def compare_newAndOld_results(new_result_box, old_result_box = None):
     noHandle_item_box = {}
 
     for record_class in new_result_box:
+
         if not noHandle_item_box.has_key(record_class):
             noHandle_item_box.update({record_class:{}})
 
         if record_class != 'BL':
+
             for record_owner in new_result_box[record_class]:
+
                 if not noHandle_item_box[record_class].has_key(record_owner):
                     noHandle_item_box[record_class].update({record_owner:[]})
 
                 for record_inode in new_result_box[record_class][record_owner]:
+
                     if old_result_box and \
                        old_result_box.has_key(record_class) and \
                        old_result_box[record_class].has_key(record_owner) and \
@@ -138,11 +153,15 @@ def compare_newAndOld_results(new_result_box, old_result_box = None):
                         noHandle_item_box[record_class][record_owner].append([record_class,record_owner,\
                                                                               new_result_box[record_class][record_owner][record_inode],\
                                                                               old_result_box[record_class][record_owner][record_inode],'UH'])
+
                     else:
                         noHandle_item_box[record_class][record_owner].append([record_class,record_owner,\
                                                                               new_result_box[record_class][record_owner][record_inode],['-'],'NR'])
+
         else:
+
             for broken_link in new_result_box[record_class]:
+
                 if not noHandle_item_box[record_class].has_key('WARNING'):
                     noHandle_item_box[record_class].update({'WARNING':[]})
 
@@ -181,6 +200,7 @@ def report_result(compared_result_box):
 
                     if record[3][0] != '-':
                         old_item_size = float(record[3][0][:-1])
+
                     else:
                         old_item_size = 0
 
@@ -190,6 +210,7 @@ def report_result(compared_result_box):
 
                     if record[3][0] != '-':
                         old_item_size = 1
+
                     else:
                         old_item_size = 0
 
@@ -213,14 +234,17 @@ if __name__ == '__main__':
         fh_report = open(name + '.report.txt', 'wb')
 
     #try:
+
         if len(sys.argv) == 3:
             outbox = compare_newAndOld_results(combine_result([sys.argv[1],]), combine_result([sys.argv[2],]))
+
         else:
             outbox = compare_newAndOld_results(combine_result([sys.argv[1],]))
 
         for record_class in outbox:
             for record_owner in outbox[record_class]:
                 for record in outbox[record_class][record_owner]:
+
                     print >> fh_output, '\t'.join([record[0], record[1], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]])
 
         fh_output.close()
@@ -248,5 +272,6 @@ if __name__ == '__main__':
                                                                              consumed_ration)
 
         fh_report.close()
+
     #except:
         #print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
