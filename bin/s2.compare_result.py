@@ -20,6 +20,9 @@
         v1.1
             2018-12-10
                 To add a function for judging modify time
+        v1.2
+            2018-12-11
+                To add a function for judging unhandle ratio
 
 '''
 
@@ -103,6 +106,11 @@ def combine_result(input_list):
                     if not result_box[record_class][record_owner].has_key(record_inode):
                         result_box[record_class][record_owner].update({record_inode:[record_size,record_mtime,record_atime,record_path]})
 
+                    if not result_box[record_class][record_owner].has_key('count'):
+                        result_box[record_class][record_owner].update({'count':0})
+
+                    result_box[record_class][record_owner]['count'] += 1
+
                 elif record_class == 'BL':
 
                     record_path = l[1]
@@ -120,6 +128,11 @@ def combine_result(input_list):
 
                     if not result_box[record_class][record_owner].has_key(record_inode):
                         result_box[record_class][record_owner].update({record_inode:[record_path]})
+
+                    if not result_box[record_class][record_owner].has_key('count'):
+                        result_box[record_class][record_owner].update({'count':0})
+
+                    result_box[record_class][record_owner]['count'] += 1
 
                 else:
                     print >> sys.stderr, result_path + ' may be not your kind of record in disk-scanning'
@@ -142,21 +155,38 @@ def compare_newAndOld_results(new_result_box, old_result_box = None):
             for record_owner in new_result_box[record_class]:
 
                 if not noHandle_item_box[record_class].has_key(record_owner):
-                    noHandle_item_box[record_class].update({record_owner:[]})
+                    noHandle_item_box[record_class].update({record_owner:{'record':[],'count':[]}})
+
+                unhandle_count = 0
+                oldRecord_count = 0
 
                 for record_inode in new_result_box[record_class][record_owner]:
 
-                    if old_result_box and \
-                       old_result_box.has_key(record_class) and \
-                       old_result_box[record_class].has_key(record_owner) and \
-                       old_result_box[record_class][record_owner].has_key(record_inode):
-                        noHandle_item_box[record_class][record_owner].append([record_class,record_owner,\
-                                                                              new_result_box[record_class][record_owner][record_inode],\
-                                                                              old_result_box[record_class][record_owner][record_inode],'UH'])
+                    if record_inode != 'count':
+
+                        if old_result_box and \
+                           old_result_box.has_key(record_class) and \
+                           old_result_box[record_class].has_key(record_owner) and \
+                           old_result_box[record_class][record_owner].has_key(record_inode):
+
+                            noHandle_item_box[record_class][record_owner]['record'].append([record_class,record_owner,\
+                                                                                            new_result_box[record_class][record_owner][record_inode],\
+                                                                                            old_result_box[record_class][record_owner][record_inode],'UH'])
+
+                            unhandle_count += 1
+
+                        else:
+                            noHandle_item_box[record_class][record_owner]['record'].append([record_class,record_owner,\
+                                                                                            new_result_box[record_class][record_owner][record_inode],['-'],'NR'])
 
                     else:
-                        noHandle_item_box[record_class][record_owner].append([record_class,record_owner,\
-                                                                              new_result_box[record_class][record_owner][record_inode],['-'],'NR'])
+
+                        if old_result_box and \
+                           old_result_box.has_key(record_class) and \
+                           old_result_box[record_class].has_key(record_owner):
+                            oldRecord_count = old_result_box[record_class][record_owner]['count']
+
+                noHandle_item_box[record_class][record_owner]['count'] = [unhandle_count,oldRecord_count]
 
         else:
 
@@ -189,7 +219,7 @@ def report_result(compared_result_box):
             if not statisticsByOwner_box[record_owner].has_key(record_class):
                 statisticsByOwner_box[record_owner].update({record_class:{'new':0,'old':0}})
 
-            for record in compared_result_box[record_class][record_owner]:
+            for record in compared_result_box[record_class][record_owner]['record']:
 
                 new_item_size = 0
                 old_item_size = 0
@@ -217,23 +247,33 @@ def report_result(compared_result_box):
                 statisticsByOwner_box[record_owner][record_class]['new'] += new_item_size
                 statisticsByOwner_box[record_owner][record_class]['old'] += old_item_size
 
+            if not statisticsByOwner_box[record_owner][record_class].has_key('unhandle_ratio'):
+                statisticsByOwner_box[record_owner][record_class].update({'unhandle_ratio':0})
+
+            if compared_result_box[record_class][record_owner]['count'][1] > 0:
+                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = '%.2f' % (compared_result_box[record_class][record_owner]['count'][0] / \
+                                                                                                compared_result_box[record_class][record_owner]['count'][1] * 100)
+
+            else:
+                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = '-'
+
     return statisticsByOwner_box
 
 
 if __name__ == '__main__':
 
-    name = 'NO_NAME'
+        name = 'NO_NAME'
 
-    if len(sys.argv) == 3:
-        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
+        if len(sys.argv) == 3:
+            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
 
-    else:
-        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
+        else:
+            name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
 
-    fh_output = open(name + '.output.txt', 'wb')
-    fh_report = open(name + '.report.txt', 'wb')
+        fh_output = open(name + '.output.txt', 'wb')
+        fh_report = open(name + '.report.txt', 'wb')
 
-    try:
+    #try:
 
         if len(sys.argv) == 3:
             outbox = compare_newAndOld_results(combine_result([sys.argv[1],]), combine_result([sys.argv[2],]))
@@ -257,21 +297,21 @@ if __name__ == '__main__':
                 consumed_ration = '-'
 
                 if report_box[report_owner][report_class]['old'] > 0:
-                    consumed_ration = '%.6f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'] * 1000)
+                    consumed_ration = '%.4f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'])
 
                 if report_class == 'LF':
-                    print >> fh_report, '%18s         LF: %12.2f Gb   || %12.2f Gb%20s' % (report_owner,
+                    print >> fh_report, '%18s         LF: %12.2f Gb   || %12.2f Gb%20s%20s' % (report_owner,
                                                                                            report_box[report_owner]['LF']['new'],
                                                                                            report_box[report_owner]['LF']['old'],
-                                                                                           consumed_ration)
+                                                                                           report_box[report_owner]['LF']['unhandle_ratio'],consumed_ration)
 
                 else:
-                    print >> fh_report, '%18s%11s: %12d      || %12d%23s' % (report_owner,report_class,
+                    print >> fh_report, '%18s%11s: %12d      || %12d%23s%20s' % (report_owner,report_class,
                                                                              report_box[report_owner][report_class]['new'],
                                                                              report_box[report_owner][report_class]['old'],
-                                                                             consumed_ration)
+                                                                             report_box[report_owner][report_class]['unhandle_ratio'],consumed_ration)
 
         fh_report.close()
 
-    except:
+    #except:
         #print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
