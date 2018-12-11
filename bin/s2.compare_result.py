@@ -31,6 +31,7 @@ import sys
 import os
 import time
 import datetime
+import math
 
 
 def combine_result(input_list):
@@ -299,7 +300,7 @@ if __name__ == '__main__':
                 consumed_ration = '-'
 
                 if report_box[report_owner][report_class]['old'] > 0:
-                    consumed_ration = '%.4f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'])
+                    consumed_ration = '%.4f' % (math.log10(report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old']))
 
                 if report_class == 'LF':
                     print >> fh_report, '%-18s         LF: %12.2f Gb   vs. %12.2f Gb%9s   | %12s   vs. %12s%9s' % (report_owner,\
@@ -321,5 +322,5 @@ if __name__ == '__main__':
 
         fh_report.close()
 
-    except:
+    except IOError:
         print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
