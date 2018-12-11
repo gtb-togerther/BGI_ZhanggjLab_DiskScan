@@ -254,8 +254,8 @@ def report_result(compared_result_box):
             if compared_result_box[record_class][record_owner]['count'][1] > 0:
                 statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = ['%d' % compared_result_box[record_class][record_owner]['count'][0],\
                                                                                        '%d' % compared_result_box[record_class][record_owner]['count'][1],
-                                                                                       '%.2f' % (compared_result_box[record_class][record_owner]['count'][0] / \
-                                                                                                 compared_result_box[record_class][record_owner]['count'][1] * 100)]
+                                                                                       '%.2f' % (float(compared_result_box[record_class][record_owner]['count'][0]) / \
+                                                                                                 float(compared_result_box[record_class][record_owner]['count'][1]) * 100)]
 
             else:
                 statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = ['-','-','-']
@@ -300,7 +300,7 @@ if __name__ == '__main__':
                 consumed_ration = '-'
 
                 if report_box[report_owner][report_class]['old'] > 0:
-                    consumed_ration = '%.4f' % (math.log10(report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old']))
+                    consumed_ration = '%.4f' % (math.log10(float(report_box[report_owner][report_class]['new']) / float(report_box[report_owner][report_class]['old'])))
 
                 if report_class == 'LF':
                     print >> fh_report, '%-18s         LF: %12.2f Gb   vs. %12.2f Gb%9s   | %12s   vs. %12s%9s' % (report_owner,\
