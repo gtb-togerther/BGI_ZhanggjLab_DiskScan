@@ -248,14 +248,16 @@ def report_result(compared_result_box):
                 statisticsByOwner_box[record_owner][record_class]['old'] += old_item_size
 
             if not statisticsByOwner_box[record_owner][record_class].has_key('unhandle_ratio'):
-                statisticsByOwner_box[record_owner][record_class].update({'unhandle_ratio':0})
+                statisticsByOwner_box[record_owner][record_class].update({'unhandle_ratio':[]})
 
             if compared_result_box[record_class][record_owner]['count'][1] > 0:
-                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = '%.2f' % (compared_result_box[record_class][record_owner]['count'][0] / \
-                                                                                                compared_result_box[record_class][record_owner]['count'][1] * 100)
+                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = ['%d' % compared_result_box[record_class][record_owner]['count'][0],\
+                                                                                       '%d' % compared_result_box[record_class][record_owner]['count'][1],
+                                                                                       '%.2f' % (compared_result_box[record_class][record_owner]['count'][0] / \
+                                                                                                 compared_result_box[record_class][record_owner]['count'][1] * 100)]
 
             else:
-                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = '-'
+                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = ['-','-','-']
 
     return statisticsByOwner_box
 
@@ -300,16 +302,22 @@ if __name__ == '__main__':
                     consumed_ration = '%.4f' % (report_box[report_owner][report_class]['new'] / report_box[report_owner][report_class]['old'])
 
                 if report_class == 'LF':
-                    print >> fh_report, '%18s         LF: %12.2f Gb   || %12.2f Gb%20s%20s' % (report_owner,
-                                                                                               report_box[report_owner]['LF']['new'],
-                                                                                               report_box[report_owner]['LF']['old'],
-                                                                                               report_box[report_owner]['LF']['unhandle_ratio'],consumed_ration)
+                    print >> fh_report, '%18s         LF: %12.2f Gb   || %12.2f Gb%20s%20s   || %12s%20s' % (report_owner,\
+                                                                                                             report_box[report_owner]['LF']['new'],\
+                                                                                                             report_box[report_owner]['LF']['old'],\
+                                                                                                             consumed_ration,\
+                                                                                                             report_box[report_owner]['LF']['unhandle_ratio'][0],\
+                                                                                                             report_box[report_owner]['LF']['unhandle_ratio'][1],\
+                                                                                                             report_box[report_owner]['LF']['unhandle_ratio'][2])
 
                 else:
-                    print >> fh_report, '%18s%11s: %12d      || %12d%23s%20s' % (report_owner,report_class,
-                                                                                 report_box[report_owner][report_class]['new'],
-                                                                                 report_box[report_owner][report_class]['old'],
-                                                                                 report_box[report_owner][report_class]['unhandle_ratio'],consumed_ration)
+                    print >> fh_report, '%18s%11s: %12d      || %12d%23s%20s   || %12s%20s' % (report_owner,report_class,\
+                                                                                               report_box[report_owner][report_class]['new'],\
+                                                                                               report_box[report_owner][report_class]['old'],\
+                                                                                               consumed_ration,\
+                                                                                               report_box[report_owner][report_class]['unhandle_ratio'][0],\
+                                                                                               report_box[report_owner][report_class]['unhandle_ratio'][1],\
+                                                                                               report_box[report_owner][report_class]['unhandle_ratio'][2])
 
         fh_report.close()
 
