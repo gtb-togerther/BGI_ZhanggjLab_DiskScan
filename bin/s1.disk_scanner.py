@@ -151,18 +151,18 @@ def traverse_directory(path, whitelist_path):
 #############################################################################################
 
     if os.path.isdir(path) and path not in whitelist:
-        
+
         if root_accessible == 'YES':
-            
+
             d_owner, d_inode, d_size, d_m_time, d_a_time, d_path, is_fragment_directory = __check_fragment_directory__(path)
-            
+
             if is_fragment_directory == 'YES':
                 fragment_directory_list.append([d_owner, str(d_inode), str(d_size), d_m_time, d_a_time, d_path])
-            
+
             else:
-                
+
                 for subitem in os.listdir(path):
-                    
+
                     item_name = os.path.join(path, subitem)
 
 ######################################################################################
@@ -171,9 +171,9 @@ def traverse_directory(path, whitelist_path):
 ######################################################################################
 
                     if os.path.isdir(item_name) and not os.path.islink(item_name) and item_name not in whitelist:
-                        
+
                         frag_dir_lst, larg_fil_lst, brok_lnk_lst, nonA_dir_list = traverse_directory(item_name, whitelist_path)
-                        
+
                         fragment_directory_list.extend(frag_dir_lst)
                         large_file_list.extend(larg_fil_lst)
                         broken_link_list.extend(brok_lnk_lst)
@@ -184,9 +184,9 @@ def traverse_directory(path, whitelist_path):
 ###########################################################
 
                     elif os.path.isfile(item_name) and not os.path.islink(item_name) and item_name not in whitelist:
-                        
+
                         f_owner, f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file__(item_name)
-                        
+
                         if is_large_file == 'YES':
                             large_file_list.append([f_owner, str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time, f_a_time, f_path])
 
@@ -195,9 +195,9 @@ def traverse_directory(path, whitelist_path):
 ############################################
 
                     elif os.path.islink(item_name) and item_name not in whitelist:
-                        
+
                         l_path, is_broken_link = __check_broken_link__(item_name)
-                        
+
                         if is_broken_link == 'YES':
                             broken_link_list.append(l_path)
 
@@ -207,7 +207,7 @@ def traverse_directory(path, whitelist_path):
 
                     else:
                         print >> sys.stderr, 'Warning: ' + item_name + ' may not be either a directory or a normal file as well as a symbolic link'
-    
+
         else:
             nonAccessible_directory_list.append([root_owner, str(root_inode), path])
 
@@ -221,49 +221,49 @@ def order_report(fragment_directory_list, large_file_list, broken_link_list, non
     'To order all the scanned result into a report'
 
     outdir = 'scanning_result.' + datetime.datetime.today().strftime("%Y-%m-%d")
-    
+
     if not os.path.exists(outdir):
         os.mkdir(outdir, 0755)
 
     with open(outdir + '/' + prefix + '.fragment_directory.report.txt', 'wb') as fragment_directory_outFH:
-        
+
         print >> fragment_directory_outFH, '#CLASS\tOWNER\tINODE\tNUM_of_SUBITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
-        
+
         for i in fragment_directory_list:
             print >> fragment_directory_outFH, 'FD\t' + '\t'.join(i)
 
     with open(outdir + '/' + prefix + '.large_file.report.txt', 'wb') as large_file_outFH:
-        
+
         print >> large_file_outFH, '#CLASS\tOWNER\tINODE\tSIZE_of_ITEM\tMODIFY_DATE\tACCESS_DATE\tPATH'
-        
+
         for i in large_file_list:
             print >> large_file_outFH, 'LF\t' + '\t'.join(i)
 
     with open(outdir + '/' + prefix + '.brocken_link.report.txt', 'wb') as broken_link_outFH:
-        
+
         print >> broken_link_outFH, '#CLASS\tBROKEN_LINK_PATH'
-        
+
         for i in broken_link_list:
             print >> broken_link_outFH, 'BL\t' + i
 
     with open(outdir + '/' + prefix + '.nonAccessible_directory.report.txt', 'wb') as nonAccessible_directory_outFH:
-        
+
         print >> nonAccessible_directory_outFH, '#CLASS\tOWNER\tINODE\tNON-ACCESSIBLE_DIRECTORY_PATH'
-        
+
         for i in nonAccessible_directory_list:
             print >> nonAccessible_directory_outFH, 'nAD\t' + '\t'.join(i)
 
 
 if __name__ == '__main__':
-    
+
     try:
-        
+
         fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list = traverse_directory(os.path.abspath(sys.argv[1]), \
                                                                                                                       os.path.abspath(sys.argv[2]))
 
         prefix = sys.argv[3] if sys.argv[3] else 'output'
-        
+
         order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list, prefix)
-    
+
     except (IOError,IndexError):
         print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <targe_dir> <whitelist> [prefix]'

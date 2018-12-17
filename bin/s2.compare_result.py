@@ -320,6 +320,8 @@ if __name__ == '__main__':
                                                                                                       report_box[report_owner][report_class]['unhandle_ratio'][1],\
                                                                                                       report_box[report_owner][report_class]['unhandle_ratio'][2])
 
+            print >> fh_report, ''
+
         fh_report.close()
 
     except IOError:
