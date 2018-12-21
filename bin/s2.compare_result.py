@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-#-*- coding:utf-8 -*-
+#!/usr/bin/env python3
 
 
-'''
+"""
 
     Author: Hao Yu (yuhao@genomics.cn)
     Date:   2018-11-07
@@ -22,10 +21,12 @@
                 To add a function for judging modify time
         v1.2
             2018-12-11
-                To add a function for judging unhandle ratio
+                To add a function for judging unhandled ratio
+        v1.3
+            2018-12-21
+                To use Python3 as the default parser
 
-'''
-
+"""
 
 import sys
 import os
@@ -34,233 +35,250 @@ import datetime
 import math
 
 
-def combine_result(input_list):
-    'This function is used for combining all the separate result into one box'
+def combine_result(__input_list):
+    """This function is used for combining all the separate result into one box"""
 
-    result_path_list = []
+    __result_path_list = []
 
-    for i in input_list:
+    for __list in __input_list:
 
-        if os.path.isdir(i):
+        if os.path.isdir(__list):
 
-            for r in os.listdir(i):
-                result_path_list.append(os.path.join(i, r))
+            for __item in os.listdir(__list):
+                __result_path_list.append(os.path.join(__list, __item))
 
         else:
-            result_path_list.append(i)
+            __result_path_list.append(__list)
 
-    result_box = {'FD':{},'LF':{},'BL':[],'nAD':{}}
+    __result_box = {}
 
-    for result_path in result_path_list:
+    for __result_path in __result_path_list:
 
-        with open(result_path, 'rb') as fh:
+        with open(__result_path, 'r') as __inFH:
 
-            for l in fh:
+            for __ in __inFH:
 
-                l = l.split()
+                __ = __.split()
 
-                if l[0].startswith('#'):
+                if __[0].startswith('#'):
                     continue
 
-                record_class = l[0]
+                __record_class = __[0]
 
-                if record_class == 'FD' or record_class == 'LF':
+                if __record_class == 'FD' or __record_class == 'LF':
 
-                    record_owner = l[1]
-                    record_inode = l[2]
-                    record_path = l[6]
+                    __record_owner = __[1]
+                    __record_inode = __[2]
+                    __record_size = __[3]
 
-                    record_size = l[3]
+                    __record_path = __[6]
 
-                    record_mtime = l[4]
-                    record_atime = l[5]
+                    __record_mtime = __[4]
+                    __record_atime = __[5]
 
-                    time_now = time.strptime(str(datetime.date.today()), "%Y-%m-%d")
-                    time_now = datetime.datetime(time_now[0], time_now[1], time_now[2])
+                    __time_now = time.strptime(str(datetime.date.today()), "%Y-%m-%d")
+                    __time_now = datetime.datetime(__time_now[0], __time_now[1], __time_now[2])
 
-                    time_rec_m = time.strptime(record_mtime, "%Y-%m-%d")
-                    time_rec_m = datetime.datetime(time_rec_m[0], time_rec_m[1], time_rec_m[2])
+                    __time_rec_m = time.strptime(__record_mtime, "%Y-%m-%d")
+                    __time_rec_m = datetime.datetime(__time_rec_m[0], __time_rec_m[1], __time_rec_m[2])
 
-                    time_rec_a = time.strptime(record_atime, "%Y-%m-%d")
-                    time_rec_a = datetime.datetime(time_rec_a[0], time_rec_a[1], time_rec_a[2])
+                    __time_rec_a = time.strptime(__record_atime, "%Y-%m-%d")
+                    __time_rec_a = datetime.datetime(__time_rec_a[0], __time_rec_a[1], __time_rec_a[2])
 
-                    m = str(time_now - time_rec_m)
-                    n = str(time_now - time_rec_a)
+                    __length_from_now_to_modify = str(__time_now - __time_rec_m)
+                    __length_from_now_to_access = str(__time_now - __time_rec_a)
 
-                    if 'days' in m and 'days' in n:
+                    if 'days' in __length_from_now_to_modify and 'days' in __length_from_now_to_access:
 
-                        m = m.split()
-                        n = n.split()
+                        __length_from_now_to_modify = __length_from_now_to_modify.split()
+                        __length_from_now_to_access = __length_from_now_to_access.split()
 
-                        if int(m[0]) <= 180:
+                        if int(__length_from_now_to_modify[0]) <= 180:
                             continue
 
-                        if int(n[0]) <= 90:
+                        if int(__length_from_now_to_access[0]) <= 90:
                             continue
 
                     else:
                         continue
 
-                    if not result_box[record_class].has_key(record_owner):
-                        result_box[record_class].update({record_owner:{}})
+                    if __record_owner not in __result_box[__record_class]:
+                        __result_box[__record_class].update({__record_owner: {}})
 
-                    if not result_box[record_class][record_owner].has_key(record_inode):
-                        result_box[record_class][record_owner].update({record_inode:[record_size,record_mtime,record_atime,record_path]})
+                    if __record_inode not in __result_box[__record_class][__record_owner]:
+                        __result_box[__record_class][__record_owner].update({__record_inode: [__record_size,
+                                                                                              __record_mtime,
+                                                                                              __record_atime,
+                                                                                              __record_path]})
 
-                    if not result_box[record_class][record_owner].has_key('count'):
-                        result_box[record_class][record_owner].update({'count':0})
+                    if 'count' not in __result_box[__record_class][__record_owner]:
+                        __result_box[__record_class][__record_owner].update({'count': 0})
 
-                    result_box[record_class][record_owner]['count'] += 1
+                    __result_box[__record_class][__record_owner]['count'] += 1
 
-                elif record_class == 'BL':
+                elif __record_class == 'BL':
 
-                    record_path = l[1]
+                    __record_path = __[1]
 
-                    result_box[record_class].append(record_path)
+                    __result_box[__record_class].append(__record_path)
 
                 elif record_class == 'nAD':
 
-                    record_owner = l[1]
-                    record_inode = l[2]
-                    record_path = l[3]
+                    __record_owner = __[1]
+                    __record_inode = __[2]
+                    __record_path = __[3]
 
-                    if not result_box[record_class].has_key(record_owner):
-                        result_box[record_class].update({record_owner:{}})
+                    if __record_owner not in __result_box[__record_class]:
+                        __result_box[__record_class].update({__record_owner: {}})
 
-                    if not result_box[record_class][record_owner].has_key(record_inode):
-                        result_box[record_class][record_owner].update({record_inode:[record_path]})
+                    if __record_inode not in __result_box[__record_class][__record_owner]:
+                        __result_box[__record_class][__record_owner].update({__record_inode: [__record_path]})
 
-                    if not result_box[record_class][record_owner].has_key('count'):
-                        result_box[record_class][record_owner].update({'count':0})
+                    if 'count' not in __result_box[__record_class][__record_owner]:
+                        __result_box[__record_class][__record_owner].update({'count': 0})
 
-                    result_box[record_class][record_owner]['count'] += 1
+                    __result_box[__record_class][__record_owner]['count'] += 1
 
                 else:
-                    print >> sys.stderr, result_path + ' may be not your kind of record in disk-scanning'
+                    print(__result_path + ' may be not your kind of record in disk-scanning', file=sys.stderr)
 
-    return result_box
+    return __result_box
 
 
-def compare_newAndOld_results(new_result_box, old_result_box = None):
-    'This function is used for comparing new and old results'
+def compare_newAndOld_results(__new_result_box, __old_result_box=None):
+    """This function is used for comparing new and old results"""
 
-    noHandle_item_box = {}
+    __unhandled_item_box = {}
 
-    for record_class in new_result_box:
+    for __record_class in __new_result_box:
 
-        if not noHandle_item_box.has_key(record_class):
-            noHandle_item_box.update({record_class:{}})
+        if __record_class not in __unhandled_item_box:
+            __unhandled_item_box.update({__record_class: {}})
 
-        if record_class != 'BL':
+        if __record_class != 'BL':
 
-            for record_owner in new_result_box[record_class]:
+            for __record_owner in __new_result_box[__record_class]:
 
-                if not noHandle_item_box[record_class].has_key(record_owner):
-                    noHandle_item_box[record_class].update({record_owner:{'record':[],'count':[]}})
+                if __record_owner not in __unhandled_item_box[__record_class]:
+                    __unhandled_item_box[__record_class].update({__record_owner: {'record': [], 'count': []}})
 
-                unhandle_count = 0
-                oldRecord_count = 0
+                __unhandled_count = 0
+                __oldRecord_count = 0
 
-                for record_inode in new_result_box[record_class][record_owner]:
+                for __record_inode in __new_result_box[__record_class][__record_owner]:
 
-                    if record_inode != 'count':
+                    if __record_inode != 'count':
 
-                        if old_result_box and \
-                           old_result_box.has_key(record_class) and \
-                           old_result_box[record_class].has_key(record_owner) and \
-                           old_result_box[record_class][record_owner].has_key(record_inode):
+                        if __old_result_box and \
+                                __record_class in __old_result_box and \
+                                __record_owner in __old_result_box[__record_class] and \
+                                __record_inode in __old_result_box[__record_class][__record_owner]:
 
-                            noHandle_item_box[record_class][record_owner]['record'].append([record_class,record_owner,\
-                                                                                            new_result_box[record_class][record_owner][record_inode],\
-                                                                                            old_result_box[record_class][record_owner][record_inode],'UH'])
+                            __unhandled_item_box[__record_class][__record_owner]['record'].append([__record_class,
+                                                                                                   __record_owner,
+                                                                                                   __new_result_box[
+                                                                                                       __record_class][
+                                                                                                       __record_owner][
+                                                                                                       __record_inode],
+                                                                                                   __old_result_box[
+                                                                                                       __record_class][
+                                                                                                       __record_owner][
+                                                                                                       __record_inode],
+                                                                                                   'UH'])
 
-                            unhandle_count += 1
+                            __unhandled_count += 1
 
                         else:
-                            noHandle_item_box[record_class][record_owner]['record'].append([record_class,record_owner,\
-                                                                                            new_result_box[record_class][record_owner][record_inode],['-'],'NR'])
+                            __unhandled_item_box[__record_class][__record_owner]['record'].append([__record_class,
+                                                                                                   __record_owner,
+                                                                                                   __new_result_box[
+                                                                                                       __record_class][
+                                                                                                       __record_owner][
+                                                                                                       __record_inode],
+                                                                                                   ['-'], 'NR'])
 
                     else:
 
-                        if old_result_box and \
-                           old_result_box.has_key(record_class) and \
-                           old_result_box[record_class].has_key(record_owner):
-                            oldRecord_count = old_result_box[record_class][record_owner]['count']
+                        if __old_result_box and \
+                                __record_class in __old_result_box and \
+                                __record_owner in __old_result_box[__record_class]:
+                            __oldRecord_count = __old_result_box[__record_class][__record_owner]['count']
 
-                noHandle_item_box[record_class][record_owner]['count'] = [unhandle_count,oldRecord_count]
+                __unhandled_item_box[__record_class][__record_owner]['count'] = [__unhandled_count, __oldRecord_count]
 
         else:
 
-            for broken_link in new_result_box[record_class]:
+            for broken_link in __new_result_box[__record_class]:
 
-                if not noHandle_item_box[record_class].has_key('WARNING'):
-                    noHandle_item_box[record_class].update({'WARNING':[]})
+                if 'WARNING' not in __unhandled_item_box[__record_class]:
+                    __unhandled_item_box[__record_class].update({'WARNING': []})
 
-                noHandle_item_box[record_class]['WARNING'].append([record_class,'WARNING',\
-                                                                  [broken_link],['-'],'WA'])
+                __unhandled_item_box[__record_class]['WARNING'].append([__record_class, 'WARNING',
+                                                                        [broken_link], ['-'], 'WA'])
 
-    return noHandle_item_box
+    return __unhandled_item_box
 
 
-def report_result(compared_result_box):
-    'This function is used for plotting'
+def report_result(__compared_result_box):
+    """This function is used for plotting"""
 
-    statisticsByOwner_box = {}
+    __statisticsByOwner_box = {}
 
-    for record_class in compared_result_box:
+    for __record_class in __compared_result_box:
 
-        if record_class == 'BL':
+        if __record_class == 'BL':
             continue
 
-        for record_owner in compared_result_box[record_class]:
+        for __record_owner in __compared_result_box[__record_class]:
 
-            if not statisticsByOwner_box.has_key(record_owner):
-                statisticsByOwner_box.update({record_owner:{}})
+            if __record_owner not in __statisticsByOwner_box:
+                __statisticsByOwner_box.update({__record_owner: {}})
 
-            if not statisticsByOwner_box[record_owner].has_key(record_class):
-                statisticsByOwner_box[record_owner].update({record_class:{'new':0,'old':0}})
+            if __record_class not in __statisticsByOwner_box[__record_owner]:
+                __statisticsByOwner_box[__record_owner].update({__record_class: {'new': 0, 'old': 0}})
 
-            for record in compared_result_box[record_class][record_owner]['record']:
+            for __record in __compared_result_box[__record_class][__record_owner]['record']:
 
-                new_item_size = 0
-                old_item_size = 0
+                __new_item_size = 0
+                __old_item_size = 0
 
-                if record_class == 'LF':
+                if __record_class == 'LF':
 
-                    new_item_size = float(record[2][0][:-1])
+                    __new_item_size = float(__record[2][0][:-1])
 
-                    if record[3][0] != '-':
-                        old_item_size = float(record[3][0][:-1])
+                    if __record[3][0] != '-':
+                        __old_item_size = float(__record[3][0][:-1])
 
                     else:
-                        old_item_size = 0
+                        __old_item_size = 0
 
                 else:
 
-                    new_item_size = 1
+                    __new_item_size = 1
 
-                    if record[3][0] != '-':
-                        old_item_size = 1
+                    if __record[3][0] != '-':
+                        __old_item_size = 1
 
                     else:
-                        old_item_size = 0
+                        __old_item_size = 0
 
-                statisticsByOwner_box[record_owner][record_class]['new'] += new_item_size
-                statisticsByOwner_box[record_owner][record_class]['old'] += old_item_size
+                __statisticsByOwner_box[__record_owner][__record_class]['new'] += __new_item_size
+                __statisticsByOwner_box[__record_owner][__record_class]['old'] += __old_item_size
 
-            if not statisticsByOwner_box[record_owner][record_class].has_key('unhandle_ratio'):
-                statisticsByOwner_box[record_owner][record_class].update({'unhandle_ratio':[]})
+            if 'unhandled_ratio' not in __statisticsByOwner_box[__record_owner][__record_class]:
+                __statisticsByOwner_box[__record_owner][__record_class].update({'unhandled_ratio': []})
 
-            if compared_result_box[record_class][record_owner]['count'][1] > 0:
-                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = ['%d' % compared_result_box[record_class][record_owner]['count'][0],\
-                                                                                       '%d' % compared_result_box[record_class][record_owner]['count'][1],
-                                                                                       '%.2f' % (float(compared_result_box[record_class][record_owner]['count'][0]) / \
-                                                                                                 float(compared_result_box[record_class][record_owner]['count'][1]) * 100)]
+            if __compared_result_box[__record_class][__record_owner]['count'][1] > 0:
+                __statisticsByOwner_box[__record_owner][__record_class]['unhandled_ratio'] = [
+                    '%d' % __compared_result_box[__record_class][__record_owner]['count'][0],
+                    '%d' % __compared_result_box[__record_class][__record_owner]['count'][1],
+                    '%.2f' % (float(__compared_result_box[__record_class][__record_owner]['count'][0]) /
+                              float(__compared_result_box[__record_class][__record_owner]['count'][1]) * 100)]
 
             else:
-                statisticsByOwner_box[record_owner][record_class]['unhandle_ratio'] = ['-','-','-']
+                __statisticsByOwner_box[__record_owner][__record_class]['unhandled_ratio'] = ['-', '-', '-']
 
-    return statisticsByOwner_box
+    return __statisticsByOwner_box
 
 
 if __name__ == '__main__':
@@ -268,29 +286,30 @@ if __name__ == '__main__':
     name = 'NO_NAME'
 
     if len(sys.argv) == 3:
-        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(os.path.realpath(sys.argv[2]))
+        name = os.path.basename(os.path.realpath(sys.argv[1])) + '__vs__' + os.path.basename(
+            os.path.realpath(sys.argv[2]))
 
     else:
         name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
 
-    fh_output = open(name + '.output.txt', 'wb')
-    fh_report = open(name + '.report.txt', 'wb')
+    ouFH = open(name + '.output.txt', 'wb')
+    rpFH = open(name + '.report.txt', 'wb')
 
     try:
 
         if len(sys.argv) == 3:
-            outbox = compare_newAndOld_results(combine_result([sys.argv[1],]), combine_result([sys.argv[2],]))
+            outbox = compare_newAndOld_results(combine_result([sys.argv[1], ]), combine_result([sys.argv[2], ]))
 
         else:
-            outbox = compare_newAndOld_results(combine_result([sys.argv[1],]))
+            outbox = compare_newAndOld_results(combine_result([sys.argv[1], ]))
 
         for record_class in outbox:
             for record_owner in outbox[record_class]:
                 for record in outbox[record_class][record_owner]:
+                    print('\t'.join([record[0], record[1], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]]),
+                          file=ouFH)
 
-                    print >> fh_output, '\t'.join([record[0], record[1], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]])
-
-        fh_output.close()
+        ouFH.close()
 
         report_box = report_result(outbox)
 
@@ -300,29 +319,34 @@ if __name__ == '__main__':
                 consumed_ration = '-'
 
                 if report_box[report_owner][report_class]['old'] > 0:
-                    consumed_ration = '%.4f' % (math.log(float(report_box[report_owner][report_class]['new']) / float(report_box[report_owner][report_class]['old'])))
+                    consumed_ration = '%.4f' % (math.log(float(report_box[report_owner][report_class]['new']) / float(
+                        report_box[report_owner][report_class]['old'])))
 
                 if report_class == 'LF':
-                    print >> fh_report, '%-18s         LF: %12.2f Gb   vs. %12.2f Gb%9s   | %12s   vs. %12s%9s' % (report_owner,\
-                                                                                                                   report_box[report_owner]['LF']['new'],\
-                                                                                                                   report_box[report_owner]['LF']['old'],\
-                                                                                                                   consumed_ration,\
-                                                                                                                   report_box[report_owner]['LF']['unhandle_ratio'][0],\
-                                                                                                                   report_box[report_owner]['LF']['unhandle_ratio'][1],\
-                                                                                                                   report_box[report_owner]['LF']['unhandle_ratio'][2])
+                    print('%-18s         LF: %12.2f Gb   vs. %12.2f Gb%9s   | %12s   vs. %12s%9s' %
+                          (report_owner,
+                           report_box[report_owner]['LF']['new'],
+                           report_box[report_owner]['LF']['old'],
+                           consumed_ration,
+                           report_box[report_owner]['LF']['unhandled_ratio'][0],
+                           report_box[report_owner]['LF']['unhandled_ratio'][1],
+                           report_box[report_owner]['LF']['unhandled_ratio'][2]),
+                          file=rpFH)
 
                 else:
-                    print >> fh_report, '%-18s%11s: %12d      vs. %12d%12s   | %12s   vs. %12s%9s' % (report_owner,report_class,\
-                                                                                                      report_box[report_owner][report_class]['new'],\
-                                                                                                      report_box[report_owner][report_class]['old'],\
-                                                                                                      consumed_ration,\
-                                                                                                      report_box[report_owner][report_class]['unhandle_ratio'][0],\
-                                                                                                      report_box[report_owner][report_class]['unhandle_ratio'][1],\
-                                                                                                      report_box[report_owner][report_class]['unhandle_ratio'][2])
+                    print('%-18s%11s: %12d      vs. %12d%12s   | %12s   vs. %12s%9s' %
+                          (report_owner, report_class,
+                           report_box[report_owner][report_class]['new'],
+                           report_box[report_owner][report_class]['old'],
+                           consumed_ration,
+                           report_box[report_owner][report_class]['unhandled_ratio'][0],
+                           report_box[report_owner][report_class]['unhandled_ratio'][1],
+                           report_box[report_owner][report_class]['unhandled_ratio'][2]),
+                          file=rpFH)
 
-            print >> fh_report, ''
+            print('', file=rpFH)
 
-        fh_report.close()
+        rpFH.close()
 
     except IOError:
-        print >> sys.stderr, 'USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]'
+        print('USAGE:  ' + sys.argv[0] + ' <scanning outdir> [old scanning outdir]', file=sys.stderr)
