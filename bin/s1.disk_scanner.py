@@ -249,34 +249,34 @@ def order_report(__fragment_directory_list, __large_file_list, __broken_link_lis
     with open(__output_dir + '/' + __prefix + '.fragment_directory.report.txt', 'w') as \
             __fragment_directory_ouFH:
 
-        __fragment_directory_ouFH.write('#CLASS\tOWNER\tINODE\tNUM_of_SUBITEM\tMODIFY_DATE\tACCESS_DATE\tPATH')
+        print('#CLASS\tOWNER\tINODE\tNUM_of_SUBITEM\tMODIFY_DATE\tACCESS_DATE\tPATH', file=__fragment_directory_ouFH)
 
         for i in __fragment_directory_list:
-            __fragment_directory_ouFH.write('FD\t' + '\t'.join(i))
+            print('FD\t' + '\t'.join(i), file=__fragment_directory_ouFH)
 
     with open(__output_dir + '/' + __prefix + '.large_file.report.txt', 'w') as \
             __large_file_ouFH:
 
-        __large_file_ouFH.write('#CLASS\tOWNER\tINODE\tSIZE_of_ITEM\tMODIFY_DATE\tACCESS_DATE\tPATH')
+        print('#CLASS\tOWNER\tINODE\tSIZE_of_ITEM\tMODIFY_DATE\tACCESS_DATE\tPATH', file=__large_file_ouFH)
 
         for i in __large_file_list:
-            __large_file_ouFH.write('LF\t' + '\t'.join(i))
+            print('LF\t' + '\t'.join(i), file=__large_file_ouFH)
 
     with open(__output_dir + '/' + __prefix + '.broken_link.report.txt', 'w') as \
             __broken_link_ouFH:
 
-        __broken_link_ouFH.write('#CLASS\tBROKEN_LINK_PATH')
+        print('#CLASS\tBROKEN_LINK_PATH', file=__broken_link_ouFH)
 
         for i in __broken_link_list:
-            __broken_link_ouFH.write('BL\t' + i)
+            print('BL\t' + i, file=__broken_link_ouFH)
 
     with open(__output_dir + '/' + __prefix + '.nonAccessible_directory.report.txt', 'w') as \
             __nonAccessible_directory_ouFH:
 
-        __nonAccessible_directory_ouFH.write('#CLASS\tOWNER\tINODE\tNON-ACCESSIBLE_DIRECTORY_PATH')
+        print('#CLASS\tOWNER\tINODE\tNON-ACCESSIBLE_DIRECTORY_PATH', file=__nonAccessible_directory_ouFH)
 
         for i in __nonAccessible_directory_list:
-            __nonAccessible_directory_ouFH.write('nAD\t' + '\t'.join(i))
+            print('nAD\t' + '\t'.join(i), file=__nonAccessible_directory_ouFH)
 
 
 if __name__ == '__main__':
