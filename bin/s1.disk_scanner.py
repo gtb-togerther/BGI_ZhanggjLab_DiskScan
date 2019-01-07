@@ -238,10 +238,8 @@ def traverse_directory(__root_path, __whitelist_path):
 
 
 def order_report(__fragment_directory_list, __large_file_list, __broken_link_list, __nonAccessible_directory_list,
-                 __prefix):
+                 __output_dir, __prefix):
     """To order all the scanned result into a report"""
-
-    __output_dir = 'scanning_result.' + datetime.datetime.today().strftime("%Y-%m-%d")
 
     if not os.path.exists(__output_dir):
         os.mkdir(__output_dir, 0o755)
@@ -283,13 +281,14 @@ if __name__ == '__main__':
 
     try:
 
+        output_dir = 'scanning_result.' + datetime.datetime.today().strftime("%Y-%m-%d")
+        output_prefix = sys.argv[3] if len(sys.argv) == 4 else 'output'
+
         fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list = \
             traverse_directory(os.path.abspath(sys.argv[1]), os.path.abspath(sys.argv[2]))
 
-        output_prefix = sys.argv[3] if len(sys.argv) == 4 else 'output'
-
         order_report(fragment_directory_list, large_file_list, broken_link_list, nonAccessible_directory_list,
-                     output_prefix)
+                     output_dir, output_prefix)
 
     except (IOError, IndexError):
         print('USAGE:  ' + sys.argv[0] + ' <target_dir> <whitelist> [prefix]', file=sys.stderr)
