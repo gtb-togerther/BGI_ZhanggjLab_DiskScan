@@ -131,7 +131,7 @@ def combine_result(__input_list):
 
                     __result_box[__record_class].append(__record_path)
 
-                elif record_class == 'nAD':
+                elif __record_class == 'nAD':
 
                     __record_owner = __[1]
                     __record_inode = __[2]
@@ -315,8 +315,9 @@ if __name__ == '__main__':
         for record_class in outbox:
             for record_owner in outbox[record_class]:
                 for record in outbox[record_class][record_owner]:
-                    print('\t'.join([record[0], record[1], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]]),
-                          file=ouFH)
+                    if record != 'record' and record != 'count':
+                        print('\t'.join([record[0], record[1], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]]),
+                              file=ouFH)
 
         ouFH.close()
 
