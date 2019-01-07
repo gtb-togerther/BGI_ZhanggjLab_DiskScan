@@ -329,8 +329,22 @@ if __name__ == '__main__':
                 consumed_ration = '-'
 
                 if report_box[report_owner][report_class]['old'] > 0:
-                    consumed_ration = '%.4f' % (math.log(float(report_box[report_owner][report_class]['new']) / float(
-                        report_box[report_owner][report_class]['old'])))
+                    consumed_ration = '%.4f' % (math.log(float(report_box[report_owner][report_class]['new']) /
+                                                         float(report_box[report_owner][report_class]['old'])))
+
+                need_warning = '-'
+
+                if 0.18 < float(consumed_ration) and \
+                        float(report_box[report_owner][report_class]['unhandled_ratio'][2]) >= 50:
+                    need_warning = 'warning_1+2'
+
+                elif 0.18 < float(consumed_ration) and \
+                        float(report_box[report_owner][report_class]['unhandled_ratio'][2]) < 50:
+                    need_warning = 'warning_1'
+
+                elif 0.18 >= float(consumed_ration) and \
+                         float(report_box[report_owner][report_class]['unhandled_ratio'][2]) >= 50:
+                    need_warning = 'warning_2'
 
                 if report_class == 'LF':
                     print('%-18s         LF: %12.2f Gb   vs. %12.2f Gb%9s   | %12s   vs. %12s%9s' %
