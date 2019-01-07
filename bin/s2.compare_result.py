@@ -52,6 +52,18 @@ def combine_result(__input_list):
 
     __result_box = {}
 
+    if 'FD' not in __result_box:
+        __result_box.update({'FD': {}})
+
+    if 'LF' not in __result_box:
+        __result_box.update({'LF': {}})
+
+    if 'BL' not in __result_box:
+        __result_box.update({'BL': []})
+
+    if 'nAD' not in __result_box:
+        __result_box.update({'nAD': {}})
+
     for __result_path in __result_path_list:
 
         with open(__result_path, 'r') as __inFH:
@@ -94,9 +106,6 @@ def combine_result(__input_list):
                         __length_from_now_to_access = __length_from_now_to_access.split()
 
                         if int(__length_from_now_to_modify[0]) <= 180:
-                            continue
-
-                        if int(__length_from_now_to_access[0]) <= 90:
                             continue
 
                     else:
@@ -292,8 +301,8 @@ if __name__ == '__main__':
     else:
         name = os.path.basename(os.path.realpath(sys.argv[1])) + '__only'
 
-    ouFH = open(name + '.output.txt', 'wb')
-    rpFH = open(name + '.report.txt', 'wb')
+    ouFH = open(name + '.output.txt', 'w')
+    rpFH = open(name + '.report.txt', 'w')
 
     try:
 
