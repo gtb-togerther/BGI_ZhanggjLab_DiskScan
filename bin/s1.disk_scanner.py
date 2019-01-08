@@ -179,53 +179,54 @@ def traverse_directory(__root_path, __whitelist_path):
                     # An accessible directory could be scanned                                           #
                     ######################################################################################
 
-                    if os.path.isdir(__item_name) and \
-                            not os.path.islink(__item_name) and \
-                            __item_name not in __whitelist_set:
+                    if __item_name not in __whitelist_set:
 
-                        __frag_dir_lst, __larg_fil_lst, __brok_lnk_lst, __nonA_dir_list = \
-                            traverse_directory(__item_name, __whitelist_path)
+                        if not os.path.islink(__item_name):
 
-                        __fragment_directory_list.extend(__frag_dir_lst)
-                        __large_file_list.extend(__larg_fil_lst)
-                        __broken_link_list.extend(__brok_lnk_lst)
-                        __nonAccessible_directory_list.extend(__nonA_dir_list)
+                            if os.path.isdir(__item_name):
 
-                    ###########################################################
-                    # An uncompressed large files should be recorded directly #
-                    ###########################################################
+                                __frag_dir_lst, __larg_fil_lst, __brok_lnk_lst, __nonA_dir_list = \
+                                    traverse_directory(__item_name, __whitelist_path)
 
-                    elif os.path.isfile(__item_name) and \
-                            not os.path.islink(__item_name) and \
-                            __item_name not in __whitelist_set:
+                                __fragment_directory_list.extend(__frag_dir_lst)
+                                __large_file_list.extend(__larg_fil_lst)
+                                __broken_link_list.extend(__brok_lnk_lst)
+                                __nonAccessible_directory_list.extend(__nonA_dir_list)
 
-                        f_owner, f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = __check_large_file(
-                            __item_name)
+                            ###########################################################
+                            # An uncompressed large files should be recorded directly #
+                            ###########################################################
 
-                        if is_large_file == 'YES':
-                            __large_file_list.append(
-                                [f_owner, str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time,
-                                 f_a_time, f_path])
+                            elif os.path.isfile(__item_name):
 
-                    ############################################
-                    # A broken symbolic link would be recorded #
-                    ############################################
+                                f_owner, f_inode, f_size, f_m_time, f_a_time, f_path, is_large_file = \
+                                    __check_large_file(__item_name)
 
-                    elif os.path.islink(__item_name) and __item_name not in __whitelist_set:
+                                if is_large_file == 'YES':
+                                    __large_file_list.append(
+                                        [f_owner, str(f_inode), str('%.2fG' % (float(f_size) / 1024 / 1024 / 1024)), f_m_time,
+                                         f_a_time, f_path])
 
-                        l_path, is_broken_link = __check_broken_link(__item_name)
+                        ############################################
+                        # A broken symbolic link would be recorded #
+                        ############################################
 
-                        if is_broken_link == 'YES':
-                            __broken_link_list.append(l_path)
+                        elif os.path.islink(__item_name):
 
-                    ##############################################################
-                    # An error would be raised if the type of an item is unknown #
-                    ##############################################################
+                            l_path, is_broken_link = __check_broken_link(__item_name)
 
-                    else:
-                        print('Warning: ' + __item_name +
-                              ' may not be either a directory or a normal file as well as a symbolic link',
-                              file=sys.stderr)
+                            if is_broken_link == 'YES':
+                                __broken_link_list.append(l_path)
+
+                        ##############################################################
+                        # An error would be raised if the type of an item is unknown #
+                        ##############################################################
+
+                        else:
+                            print('Warning: "' +
+                                  __item_name +
+                                  '" may not be either a directory or a normal file as well as a symbolic link',
+                                  file=sys.stderr)
 
         else:
             __nonAccessible_directory_list.append([__root_owner, str(__root_inode), __root_path])

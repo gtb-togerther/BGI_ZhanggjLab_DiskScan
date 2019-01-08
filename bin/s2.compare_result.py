@@ -105,7 +105,7 @@ def combine_result(__input_list):
                         __length_from_now_to_modify = __length_from_now_to_modify.split()
                         __length_from_now_to_access = __length_from_now_to_access.split()
 
-                        if int(__length_from_now_to_modify[0]) <= 180:
+                        if int(__length_from_now_to_modify[0]) <= 90:
                             continue
 
                     else:
@@ -129,7 +129,7 @@ def combine_result(__input_list):
 
                     __record_path = __[1]
 
-                    __result_box[__record_class].append(__record_path)
+                    __result_box['BL'].append(__record_path)
 
                 elif __record_class == 'nAD':
 
@@ -137,16 +137,16 @@ def combine_result(__input_list):
                     __record_inode = __[2]
                     __record_path = __[3]
 
-                    if __record_owner not in __result_box[__record_class]:
-                        __result_box[__record_class].update({__record_owner: {}})
+                    if __record_owner not in __result_box['nAD']:
+                        __result_box['nAD'].update({__record_owner: {}})
 
-                    if __record_inode not in __result_box[__record_class][__record_owner]:
-                        __result_box[__record_class][__record_owner].update({__record_inode: [__record_path]})
+                    if __record_inode not in __result_box['nAD'][__record_owner]:
+                        __result_box['nAD'][__record_owner].update({__record_inode: [__record_path]})
 
-                    if 'count' not in __result_box[__record_class][__record_owner]:
-                        __result_box[__record_class][__record_owner].update({'count': 0})
+                    if 'count' not in __result_box['nAD'][__record_owner]:
+                        __result_box['nAD'][__record_owner].update({'count': 0})
 
-                    __result_box[__record_class][__record_owner]['count'] += 1
+                    __result_box['nAD'][__record_owner]['count'] += 1
 
                 else:
                     print(__result_path + ' may be not your kind of record in disk-scanning', file=sys.stderr)
@@ -217,13 +217,12 @@ def compare_newAndOld_results(__new_result_box, __old_result_box=None):
 
         else:
 
-            for broken_link in __new_result_box[__record_class]:
+            for broken_link in __new_result_box['BL']:
 
-                if 'WARNING' not in __unhandled_item_box[__record_class]:
-                    __unhandled_item_box[__record_class].update({'WARNING': []})
+                if 'WARNING' not in __unhandled_item_box['BL']:
+                    __unhandled_item_box['BL'].update({'WARNING': []})
 
-                __unhandled_item_box[__record_class]['WARNING'].append([__record_class, 'WARNING',
-                                                                        [broken_link], ['-'], 'WA'])
+                __unhandled_item_box['BL']['WARNING'].append(['BL', 'WARNING', [broken_link], ['-'], 'WA'])
 
     return __unhandled_item_box
 
@@ -313,11 +312,19 @@ if __name__ == '__main__':
             outbox = compare_newAndOld_results(combine_result([sys.argv[1], ]))
 
         for record_class in outbox:
-            for record_owner in outbox[record_class]:
-                for record in outbox[record_class][record_owner]:
-                    if record != 'record' and record != 'count':
+
+            if record_class != 'BL':
+
+                for record_owner in outbox[record_class]:
+                    for record in outbox[record_class][record_owner]['record']:
+
                         print('\t'.join([record[0], record[1], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]]),
                               file=ouFH)
+
+            else:
+
+                for record in outbox['BL']['WARNING']:
+                    print('\t'.join([record[0], '\t'.join(record[2]), '\t'.join(record[3]), record[-1]]), file=ouFH)
 
         ouFH.close()
 
@@ -334,38 +341,41 @@ if __name__ == '__main__':
 
                 need_warning = '-'
 
-                if 0.18 < float(consumed_ration) and \
-                        float(report_box[report_owner][report_class]['unhandled_ratio'][2]) >= 50:
-                    need_warning = 'warning_1+2'
+                if consumed_ration != '-' and report_box[report_owner][report_class]['unhandled_ratio'][2] != '-':
+                    if 0.18 < float(consumed_ration) and \
+                            float(report_box[report_owner][report_class]['unhandled_ratio'][2]) > 50:
+                        need_warning = 'warning_1+2'
 
-                elif 0.18 < float(consumed_ration) and \
-                        float(report_box[report_owner][report_class]['unhandled_ratio'][2]) < 50:
-                    need_warning = 'warning_1'
+                    elif 0.18 < float(consumed_ration) and \
+                            float(report_box[report_owner][report_class]['unhandled_ratio'][2]) <= 50:
+                        need_warning = 'warning_1'
 
-                elif 0.18 >= float(consumed_ration) and \
-                         float(report_box[report_owner][report_class]['unhandled_ratio'][2]) >= 50:
-                    need_warning = 'warning_2'
+                    elif 0.18 >= float(consumed_ration) and \
+                            float(report_box[report_owner][report_class]['unhandled_ratio'][2]) > 50:
+                        need_warning = 'warning_2'
 
                 if report_class == 'LF':
-                    print('%-18s         LF: %12.2f Gb   vs. %12.2f Gb%9s   | %12s   vs. %12s%9s' %
+                    print('%-18s         LF: %12.2f Gb   vs. %12.2f Gb%9s   | %12s   vs. %12s%9s\t%s' %
                           (report_owner,
                            report_box[report_owner]['LF']['new'],
                            report_box[report_owner]['LF']['old'],
                            consumed_ration,
                            report_box[report_owner]['LF']['unhandled_ratio'][0],
                            report_box[report_owner]['LF']['unhandled_ratio'][1],
-                           report_box[report_owner]['LF']['unhandled_ratio'][2]),
+                           report_box[report_owner]['LF']['unhandled_ratio'][2],
+                           need_warning),
                           file=rpFH)
 
                 else:
-                    print('%-18s%11s: %12d      vs. %12d%12s   | %12s   vs. %12s%9s' %
+                    print('%-18s%11s: %12d      vs. %12d%12s   | %12s   vs. %12s%9s\t%s' %
                           (report_owner, report_class,
                            report_box[report_owner][report_class]['new'],
                            report_box[report_owner][report_class]['old'],
                            consumed_ration,
                            report_box[report_owner][report_class]['unhandled_ratio'][0],
                            report_box[report_owner][report_class]['unhandled_ratio'][1],
-                           report_box[report_owner][report_class]['unhandled_ratio'][2]),
+                           report_box[report_owner][report_class]['unhandled_ratio'][2],
+                           need_warning),
                           file=rpFH)
 
             print('', file=rpFH)
